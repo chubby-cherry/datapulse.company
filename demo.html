@@ -1,0 +1,2262 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataPulse — Demo Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0b0f;
+            --bg-secondary: #12141a;
+            --bg-tertiary: #1a1d26;
+            --bg-card: #14161c;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #8b5cf6;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --accent-amber: #f59e0b;
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: rgba(255, 255, 255, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .demo-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1rem 2rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo-data { color: var(--text-primary); }
+        .logo-pulse { 
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .demo-badge {
+            padding: 0.35rem 0.75rem;
+            background: rgba(0, 212, 255, 0.1);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 100px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .lang-switcher {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 2px;
+            border: 1px solid var(--border-color);
+        }
+
+        .lang-btn {
+            padding: 0.4rem 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .lang-btn:hover { color: var(--text-primary); }
+        .lang-btn.active {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
+        .back-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: color 0.3s;
+        }
+
+        .back-link:hover { color: var(--accent-cyan); }
+
+        /* Disclaimer - НЕПРОЗРАЧНЫЙ ФОН */
+        .disclaimer-bar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            right: 0;
+            z-index: 99;
+            padding: 0.75rem 2rem;
+            background: #2a1f0a;
+            border-bottom: 1px solid rgba(245, 158, 11, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        .disclaimer-icon {
+            color: var(--accent-amber);
+            flex-shrink: 0;
+        }
+
+        .disclaimer-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .disclaimer-text strong {
+            color: var(--accent-amber);
+        }
+
+        /* Main Layout */
+        .dashboard {
+            padding: 8rem 2rem 2rem;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .dashboard-title {
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-title h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-title p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0;
+            overflow-x: auto;
+        }
+
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            margin-bottom: -1px;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .tab:hover { color: var(--text-secondary); }
+        .tab.active {
+            color: var(--accent-cyan);
+            border-bottom-color: var(--accent-cyan);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .grid-4 { grid-template-columns: repeat(4, 1fr); }
+        .grid-3 { grid-template-columns: repeat(3, 1fr); }
+        .grid-2 { grid-template-columns: repeat(2, 1fr); }
+        .grid-2-1 { grid-template-columns: 2fr 1fr; }
+        .grid-1-1-1 { grid-template-columns: 1fr 1fr 1fr; }
+
+        .mb-1 { margin-bottom: 1.5rem; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 500;
+        }
+
+        .card-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .badge-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .badge-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+        .badge-amber { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+        .badge-cyan { background: rgba(0, 212, 255, 0.15); color: var(--accent-cyan); }
+
+        /* Metric Cards */
+        .metric-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            line-height: 1;
+            margin-bottom: 0.5rem;
+        }
+
+        .metric-value.green { color: var(--accent-green); }
+        .metric-value.cyan { color: var(--accent-cyan); }
+        .metric-value.amber { color: var(--accent-amber); }
+        .metric-value.red { color: var(--accent-red); }
+
+        .metric-change {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.85rem;
+        }
+
+        .metric-change.positive { color: var(--accent-green); }
+        .metric-change.negative { color: var(--accent-red); }
+
+        /* Bar Chart */
+        .chart-container {
+            height: 220px;
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .chart-bars {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 100%;
+            padding-top: 1.5rem;
+            gap: 6px;
+        }
+
+        .chart-bar-group {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .chart-bar {
+            width: 100%;
+            max-width: 35px;
+            border-radius: 4px 4px 0 0;
+            transition: height 0.5s ease;
+            position: relative;
+        }
+
+        .chart-bar.cyan { background: linear-gradient(to top, var(--accent-cyan), rgba(0, 212, 255, 0.5)); }
+        .chart-bar.purple { background: linear-gradient(to top, var(--accent-purple), rgba(139, 92, 246, 0.5)); }
+        .chart-bar.green { background: linear-gradient(to top, var(--accent-green), rgba(16, 185, 129, 0.5)); }
+        .chart-bar.red { background: linear-gradient(to top, var(--accent-red), rgba(239, 68, 68, 0.5)); }
+        .chart-bar.amber { background: linear-gradient(to top, var(--accent-amber), rgba(245, 158, 11, 0.5)); }
+
+        .chart-label {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .chart-value {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+        }
+
+        /* Stacked Bar */
+        .stacked-bar-container {
+            margin-top: 1rem;
+        }
+
+        .stacked-bar-legend {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+        }
+
+        .stacked-bar {
+            height: 24px;
+            display: flex;
+            border-radius: 4px;
+            overflow: hidden;
+            background: var(--bg-tertiary);
+        }
+
+        .stacked-segment {
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        /* Horizontal Bar Chart */
+        .h-bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .h-bar-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .h-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+        }
+
+        .h-bar-label span:first-child { color: var(--text-secondary); }
+        .h-bar-label span:last-child { 
+            color: var(--text-primary); 
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .h-bar {
+            height: 8px;
+            background: var(--bg-tertiary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .h-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .data-table tr:last-child td { border-bottom: none; }
+        .data-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        .status-dot.green { background: var(--accent-green); }
+        .status-dot.red { background: var(--accent-red); }
+        .status-dot.amber { background: var(--accent-amber); }
+
+        .risk-score {
+            padding: 0.25rem 0.6rem;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .risk-high { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+        .risk-medium { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+        .risk-low { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+
+        /* Activity Feed */
+        .activity-feed {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+        }
+
+        .activity-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.blocked { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); }
+        .activity-icon.approved { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+        .activity-icon.review { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); }
+        .activity-icon.alert { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); }
+
+        .activity-content { flex: 1; }
+        .activity-title { font-size: 0.85rem; font-weight: 500; margin-bottom: 0.25rem; }
+        .activity-meta { font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+        /* Progress Bar */
+        .progress-container { margin-top: 1rem; }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .progress-label span:first-child { color: var(--text-secondary); }
+        .progress-label span:last-child { color: var(--text-primary); font-family: 'JetBrains Mono', monospace; }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--bg-tertiary);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-fill.cyan { background: linear-gradient(to right, var(--accent-cyan), rgba(0, 212, 255, 0.7)); }
+        .progress-fill.green { background: linear-gradient(to right, var(--accent-green), rgba(16, 185, 129, 0.7)); }
+
+        /* Model Card */
+        .model-card { display: flex; flex-direction: column; gap: 1rem; }
+
+        .model-header { display: flex; justify-content: space-between; align-items: center; }
+        .model-name { font-weight: 600; font-size: 1rem; }
+        .model-version { font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+        .model-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+        .model-stat { text-align: center; }
+        .model-stat-value { font-size: 1.25rem; font-weight: 600; color: var(--accent-cyan); }
+        .model-stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+
+        /* Live Indicator */
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--accent-green);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Customer segments */
+        .segment-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .segment-item {
+            text-align: center;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+
+        .segment-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+        }
+
+        .segment-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Graph nodes */
+        .graph-container {
+            height: 200px;
+            position: relative;
+            margin-top: 1rem;
+        }
+
+        .graph-node {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            border: 2px solid;
+        }
+
+        .node-main { background: rgba(0, 212, 255, 0.2); border-color: var(--accent-cyan); color: var(--accent-cyan); }
+        .node-related { background: rgba(139, 92, 246, 0.2); border-color: var(--accent-purple); color: var(--accent-purple); }
+        .node-suspicious { background: rgba(239, 68, 68, 0.2); border-color: var(--accent-red); color: var(--accent-red); }
+
+        .graph-line {
+            position: absolute;
+            height: 2px;
+            background: var(--border-color);
+            transform-origin: left center;
+        }
+
+        .graph-line.suspicious { background: var(--accent-red); opacity: 0.5; }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .grid-4 { grid-template-columns: repeat(2, 1fr); }
+            .grid-2-1 { grid-template-columns: 1fr; }
+            .grid-1-1-1 { grid-template-columns: 1fr; }
+            .segment-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard { padding: 8rem 1rem 1rem; }
+            .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+            .segment-grid { grid-template-columns: 1fr 1fr; }
+            .demo-header { padding: 1rem; }
+            .header-left { gap: 1rem; }
+            .demo-badge { display: none; }
+            .disclaimer-bar { padding: 0.75rem 1rem; top: 56px; }
+            .disclaimer-text { font-size: 0.7rem; }
+        }
+
+        /* Animations */
+        .animate-in {
+            animation: fadeInUp 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <header class="demo-header">
+        <div class="header-left">
+            <a href="index.html" class="logo">
+                <span class="logo-data">Data</span><span class="logo-pulse">Pulse</span>
+            </a>
+            <span class="demo-badge" data-i18n="demo.badge">Интерактивное демо</span>
+        </div>
+        <div class="header-right">
+            <div class="lang-switcher">
+                <button class="lang-btn" data-lang="ru">RU</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
+            <a href="index.html" class="back-link">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+                <span data-i18n="demo.back">На главную</span>
+            </a>
+        </div>
+    </header>
+
+    <div class="disclaimer-bar">
+        <svg class="disclaimer-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span class="disclaimer-text" data-i18n="demo.disclaimer">
+            <strong>Демонстрационный дашборд.</strong> Финальный вид и функциональность определяются индивидуально под задачи вашего бизнеса.
+        </span>
+    </div>
+
+    <main class="dashboard">
+        <div class="dashboard-title">
+            <h1 data-i18n="demo.title">ML Analytics Dashboard</h1>
+            <p data-i18n="demo.subtitle">Мониторинг моделей и бизнес-метрик в реальном времени</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="fraud" data-i18n="demo.tabs.fraud">Fraud Detection</button>
+            <button class="tab" data-tab="churn" data-i18n="demo.tabs.churn">Churn & LTV</button>
+            <button class="tab" data-tab="aml" data-i18n="demo.tabs.aml">AML / KYC</button>
+            <button class="tab" data-tab="operations" data-i18n="demo.tabs.operations">Operations</button>
+            <button class="tab" data-tab="forecast" data-i18n="demo.tabs.forecast">Volume Forecaster</button>
+            <button class="tab" data-tab="models" data-i18n="demo.tabs.models">Модели</button>
+        </div>
+
+        <!-- Fraud Detection Tab -->
+        <div class="tab-content active" id="fraud">
+            <div class="grid grid-3 mb-1">
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.fraud.blocked">Заблокировано сегодня</span>
+                        <span class="card-badge badge-green">↓ 12%</span>
+                    </div>
+                    <div class="metric-value red">247</div>
+                    <div class="metric-change positive">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                        </svg>
+                        <span data-i18n="demo.fraud.vsYesterday">vs. вчера: 281</span>
+                    </div>
+                </div>
+
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.fraud.accuracy">Точность модели</span>
+                        <span class="card-badge badge-green">stable</span>
+                    </div>
+                    <div class="metric-value cyan">94.7%</div>
+                    <div class="metric-change">
+                        <span class="live-indicator">
+                            <span class="live-dot"></span>
+                            <span>LIVE</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.fraud.falsePositive">False Positive Rate</span>
+                        <span class="card-badge badge-green">↓ 0.1%</span>
+                    </div>
+                    <div class="metric-value cyan">0.31%</div>
+                    <div class="metric-change positive">
+                        <span data-i18n="demo.fraud.target">target: < 0.5%</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2 mb-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.fraud.weeklyBlocked">Заблокированные транзакции (неделя)</span>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-bars">
+                            <div class="chart-bar-group">
+                                <div class="chart-bar red" style="height: 130px;"><span class="chart-value">281</span></div>
+                                <span class="chart-label">Пн</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar red" style="height: 158px;"><span class="chart-value">342</span></div>
+                                <span class="chart-label">Вт</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar red" style="height: 108px;"><span class="chart-value">234</span></div>
+                                <span class="chart-label">Ср</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar red" style="height: 138px;"><span class="chart-value">298</span></div>
+                                <span class="chart-label">Чт</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar red" style="height: 178px;"><span class="chart-value">385</span></div>
+                                <span class="chart-label">Пт</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar red" style="height: 89px;"><span class="chart-value">192</span></div>
+                                <span class="chart-label">Сб</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar red" style="height: 114px;"><span class="chart-value">247</span></div>
+                                <span class="chart-label">Вс</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.fraud.byType">Типы мошенничества</span>
+                    </div>
+                    <div class="h-bar-chart">
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span data-i18n="demo.fraud.cardNotPresent">Card Not Present</span>
+                                <span>42% • 104 txn</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 42%; background: var(--accent-red);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span data-i18n="demo.fraud.accountTakeover">Account Takeover</span>
+                                <span>28% • 69 txn</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 28%; background: var(--accent-amber);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span data-i18n="demo.fraud.synthetic">Synthetic Identity</span>
+                                <span>18% • 44 txn</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 18%; background: var(--accent-purple);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span data-i18n="demo.fraud.friendly">Friendly Fraud</span>
+                                <span>8% • 20 txn</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 8%; background: var(--accent-cyan);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span data-i18n="demo.fraud.other">Другое</span>
+                                <span>4% • 10 txn</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 4%; background: var(--text-muted);"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" data-i18n="demo.fraud.recentAlerts">Активные алерты</span>
+                    <span class="live-indicator"><span class="live-dot"></span><span>LIVE</span></span>
+                </div>
+                <div class="activity-feed">
+                    <div class="activity-item" style="cursor: pointer;" onclick="alert('Переход к транзакции TXN-847291')">
+                        <div class="activity-icon blocked">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                            </svg>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title" style="color: var(--accent-red);" data-i18n="demo.fraud.alert1Title">Card Not Present Fraud — $12,450</div>
+                            <div class="activity-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;" data-i18n="demo.fraud.alert1Desc">Карта зарегистрирована в США, транзакция из Нигерии. IP не совпадает с историей. Device fingerprint новый.</div>
+                            <div class="activity-meta">TXN-847291 • Score: 0.94 • john.d***@gmail.com • 2 мин назад</div>
+                        </div>
+                        <div style="color: var(--text-muted); display: flex; align-items: center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </div>
+                    </div>
+                    <div class="activity-item" style="cursor: pointer;" onclick="alert('Переход к транзакции TXN-847288')">
+                        <div class="activity-icon blocked">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                            </svg>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title" style="color: var(--accent-red);" data-i18n="demo.fraud.alert2Title">Account Takeover — $8,200</div>
+                            <div class="activity-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;" data-i18n="demo.fraud.alert2Desc">Смена пароля 10 мин назад с нового устройства. Попытка вывода на новый кошелёк. Паттерн не соответствует истории.</div>
+                            <div class="activity-meta">TXN-847288 • Score: 0.89 • maria.s***@yahoo.com • 5 мин назад</div>
+                        </div>
+                        <div style="color: var(--text-muted); display: flex; align-items: center;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon review">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title" style="color: var(--accent-amber);" data-i18n="demo.fraud.alert3Title">Velocity Alert — $3,450</div>
+                            <div class="activity-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;" data-i18n="demo.fraud.alert3Desc">5 транзакций за последние 10 минут. Общая сумма превышает типичный дневной лимит на 340%.</div>
+                            <div class="activity-meta">TXN-847285 • Score: 0.71 • alex.k***@mail.ru • 8 мин назад</div>
+                        </div>
+                    </div>
+                    <div class="activity-item">
+                        <div class="activity-icon review">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                            </svg>
+                        </div>
+                        <div class="activity-content">
+                            <div class="activity-title" style="color: var(--accent-amber);" data-i18n="demo.fraud.alert4Title">Geo Anomaly — $2,100</div>
+                            <div class="activity-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;" data-i18n="demo.fraud.alert4Desc">Транзакция из Сингапура через 2 часа после транзакции из Москвы. Физически невозможное перемещение.</div>
+                            <div class="activity-meta">TXN-847282 • Score: 0.68 • dmitry.v***@gmail.com • 12 мин назад</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Churn & LTV Tab -->
+        <div class="tab-content" id="churn">
+            <div class="grid grid-3 mb-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.churn.atRisk">Клиентов в зоне риска</span>
+                        <span class="card-badge badge-amber">+5% vs неделя</span>
+                    </div>
+                    <div class="metric-value amber">1,247</div>
+                    <div class="metric-change">
+                        <span data-i18n="demo.churn.ofTotal">из 45,892 активных</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.churn.retained">Удержано за месяц</span>
+                        <span class="card-badge badge-green">↑ 23%</span>
+                    </div>
+                    <div class="metric-value green">342</div>
+                    <div class="metric-change positive">
+                        <span data-i18n="demo.churn.retentionRate">retention rate: 67%</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.churn.avgLtv">Средний LTV</span>
+                        <span class="card-badge badge-cyan">+12%</span>
+                    </div>
+                    <div class="metric-value cyan">$2,847</div>
+                    <div class="metric-change positive">
+                        <span data-i18n="demo.churn.predicted">predicted 12-month</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2 mb-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.churn.probability">Вероятность оттока по когортам</span>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-bars">
+                            <div class="chart-bar-group">
+                                <div class="chart-bar amber" style="height: 170px;"><span class="chart-value">34%</span></div>
+                                <span class="chart-label">0-3м</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar amber" style="height: 120px;"><span class="chart-value">24%</span></div>
+                                <span class="chart-label">3-6м</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar green" style="height: 80px;"><span class="chart-value">16%</span></div>
+                                <span class="chart-label">6-12м</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar green" style="height: 50px;"><span class="chart-value">10%</span></div>
+                                <span class="chart-label">1-2г</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar green" style="height: 30px;"><span class="chart-value">6%</span></div>
+                                <span class="chart-label">2-3г</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar green" style="height: 20px;"><span class="chart-value">4%</span></div>
+                                <span class="chart-label">3+г</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.churn.ltvSegments">LTV по сегментам</span>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-bars">
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 180px;"><span class="chart-value">$8.2K</span></div>
+                                <span class="chart-label">VIP</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 123px;"><span class="chart-value">$5.6K</span></div>
+                                <span class="chart-label">Premium</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 75px;"><span class="chart-value">$3.4K</span></div>
+                                <span class="chart-label">Standard</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 37px;"><span class="chart-value">$1.7K</span></div>
+                                <span class="chart-label">Basic</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 15px;"><span class="chart-value">$0.7K</span></div>
+                                <span class="chart-label">Trial</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" data-i18n="demo.churn.segments">Сегментация клиентской базы</span>
+                </div>
+                <div class="segment-grid">
+                    <div class="segment-item">
+                        <div class="segment-value">12,847</div>
+                        <div class="segment-label" data-i18n="demo.churn.segmentVip">VIP (высокий LTV)</div>
+                    </div>
+                    <div class="segment-item">
+                        <div class="segment-value">18,234</div>
+                        <div class="segment-label" data-i18n="demo.churn.segmentActive">Активные</div>
+                    </div>
+                    <div class="segment-item">
+                        <div class="segment-value">9,456</div>
+                        <div class="segment-label" data-i18n="demo.churn.segmentSleeping">Спящие</div>
+                    </div>
+                    <div class="segment-item">
+                        <div class="segment-value">5,355</div>
+                        <div class="segment-label" data-i18n="demo.churn.segmentNew">Новые (< 30д)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AML / KYC Tab -->
+        <div class="tab-content" id="aml">
+            <div class="grid grid-3 mb-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.aml.alerts">SAR-алертов сегодня</span>
+                        <span class="card-badge badge-amber">требует внимания</span>
+                    </div>
+                    <div class="metric-value amber">23</div>
+                    <div class="metric-change">
+                        <span data-i18n="demo.aml.pending">12 на рассмотрении</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.aml.verified">Верификаций KYC</span>
+                        <span class="card-badge badge-green">норма</span>
+                    </div>
+                    <div class="metric-value green">1,847</div>
+                    <div class="metric-change positive">
+                        <span data-i18n="demo.aml.autoApproved">94% авто-одобрено</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.aml.suspicious">Подозрительных связей</span>
+                        <span class="card-badge badge-red">+3 новых</span>
+                    </div>
+                    <div class="metric-value red">47</div>
+                    <div class="metric-change">
+                        <span data-i18n="demo.aml.networks">в 8 сетях</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2 mb-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.aml.alertTypes">Типы алертов (месяц)</span>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-bars">
+                            <div class="chart-bar-group">
+                                <div class="chart-bar red" style="height: 170px;"><span class="chart-value">156</span></div>
+                                <span class="chart-label" data-i18n="demo.aml.structuring">Дробление</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar amber" style="height: 129px;"><span class="chart-value">118</span></div>
+                                <span class="chart-label" data-i18n="demo.aml.velocity">Velocity</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar purple" style="height: 99px;"><span class="chart-value">91</span></div>
+                                <span class="chart-label" data-i18n="demo.aml.geographic">Geo</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 70px;"><span class="chart-value">64</span></div>
+                                <span class="chart-label" data-i18n="demo.aml.behavioral">Поведение</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar green" style="height: 40px;"><span class="chart-value">37</span></div>
+                                <span class="chart-label" data-i18n="demo.aml.sanctions">Санкции</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ГРАФ ПОДОЗРИТЕЛЬНЫХ СВЯЗЕЙ - К КОНКРЕТНОМУ ПОЛЬЗОВАТЕЛЮ ACC-7721 -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.aml.graphTitle">Связи пользователя ACC-****7721</span>
+                    </div>
+                    <div class="graph-container" style="height: 200px; background: rgba(0,0,0,0.2); border-radius: 8px;">
+                        <svg style="width: 100%; height: 100%;" viewBox="0 0 400 180">
+                            <!-- Lines from main node (200,90 r=28) to related purple accounts -->
+                            <!-- To 3382 (70,45 r=18) -->
+                            <line x1="175" y1="78" x2="86" y2="52" stroke="#3f3f46" stroke-width="1.5"/>
+                            <!-- To 9914 (330,40 r=18) -->
+                            <line x1="227" y1="80" x2="313" y2="48" stroke="#3f3f46" stroke-width="1.5"/>
+                            <!-- To 4521 (345,120 r=18) -->
+                            <line x1="228" y1="95" x2="328" y2="115" stroke="#3f3f46" stroke-width="1.5"/>
+                            <!-- To 6673 (130,145 r=18) -->
+                            <line x1="178" y1="108" x2="145" y2="135" stroke="#3f3f46" stroke-width="1.5"/>
+                            
+                            <!-- Suspicious lines from purple to SAR (red dashed) -->
+                            <!-- 3382 (70,45) to 8834 (50,105) -->
+                            <line x1="62" y1="62" x2="55" y2="86" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 3" opacity="0.8"/>
+                            <!-- 6673 (130,145) to 8834 (50,105) -->
+                            <line x1="113" y1="140" x2="68" y2="112" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 3" opacity="0.8"/>
+                            <!-- 4521 (345,120) to 2291 (295,150) -->
+                            <line x1="328" y1="130" x2="310" y2="140" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 3" opacity="0.8"/>
+                            <!-- 6673 (130,145) to 2291 (295,150) -->
+                            <line x1="148" y1="148" x2="275" y2="150" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 3" opacity="0.8"/>
+                            
+                            <!-- Related accounts (purple) -->
+                            <g>
+                                <circle cx="70" cy="45" r="18" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
+                                <text x="70" y="49" text-anchor="middle" fill="#8b5cf6" font-size="11" font-weight="600" font-family="JetBrains Mono">3382</text>
+                            </g>
+                            <g>
+                                <circle cx="330" cy="40" r="18" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
+                                <text x="330" y="44" text-anchor="middle" fill="#8b5cf6" font-size="11" font-weight="600" font-family="JetBrains Mono">9914</text>
+                            </g>
+                            <g>
+                                <circle cx="345" cy="120" r="18" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
+                                <text x="345" y="124" text-anchor="middle" fill="#8b5cf6" font-size="11" font-weight="600" font-family="JetBrains Mono">4521</text>
+                            </g>
+                            <g>
+                                <circle cx="130" cy="145" r="18" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
+                                <text x="130" y="149" text-anchor="middle" fill="#8b5cf6" font-size="11" font-weight="600" font-family="JetBrains Mono">6673</text>
+                            </g>
+                            
+                            <!-- SAR accounts (red) - connected to purple, not main -->
+                            <g>
+                                <circle cx="50" cy="105" r="20" fill="rgba(239, 68, 68, 0.2)" stroke="#ef4444" stroke-width="2"/>
+                                <text x="50" y="102" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="600" font-family="JetBrains Mono">8834</text>
+                                <text x="50" y="115" text-anchor="middle" fill="#ef4444" font-size="8" font-family="JetBrains Mono">SAR</text>
+                            </g>
+                            <g>
+                                <circle cx="295" cy="150" r="20" fill="rgba(239, 68, 68, 0.2)" stroke="#ef4444" stroke-width="2"/>
+                                <text x="295" y="147" text-anchor="middle" fill="#ef4444" font-size="11" font-weight="600" font-family="JetBrains Mono">2291</text>
+                                <text x="295" y="160" text-anchor="middle" fill="#ef4444" font-size="8" font-family="JetBrains Mono">SAR</text>
+                            </g>
+                            
+                            <!-- Main user node ACC-7721 (on top) -->
+                            <g>
+                                <circle cx="200" cy="90" r="28" fill="rgba(0, 212, 255, 0.15)" stroke="#00d4ff" stroke-width="2.5"/>
+                                <text x="200" y="86" text-anchor="middle" fill="#00d4ff" font-size="13" font-weight="700" font-family="JetBrains Mono">7721</text>
+                                <text x="200" y="101" text-anchor="middle" fill="#71717a" font-size="9" font-family="JetBrains Mono">$49.5K</text>
+                            </g>
+                        </svg>
+                    </div>
+                    <div class="stacked-bar-legend" style="margin-top: 0.75rem;">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--accent-cyan);"></span>
+                            <span data-i18n="demo.aml.mainEntity">Исследуемый аккаунт</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--accent-purple);"></span>
+                            <span data-i18n="demo.aml.relatedEntity">Связанные</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--accent-red);"></span>
+                            <span data-i18n="demo.aml.suspiciousEntity">SAR-алерт</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" data-i18n="demo.aml.recentAlerts">Последние SAR-алерты</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th data-i18n="demo.aml.tableType">Тип</th>
+                            <th data-i18n="demo.aml.tableEntity">Сущность</th>
+                            <th data-i18n="demo.aml.tableAmount">Сумма</th>
+                            <th data-i18n="demo.aml.tableRisk">Риск</th>
+                            <th data-i18n="demo.aml.tableStatus">Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">SAR-2847</td>
+                            <td data-i18n="demo.aml.structuring">Дробление</td>
+                            <td>ACC-****7721</td>
+                            <td>$49,500</td>
+                            <td><span class="risk-score risk-high">0.91</span></td>
+                            <td><span class="status-dot amber"></span><span data-i18n="demo.aml.statusReview">Review</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">SAR-2846</td>
+                            <td data-i18n="demo.aml.velocity">Velocity</td>
+                            <td>ACC-****3382</td>
+                            <td>$127,000</td>
+                            <td><span class="risk-score risk-high">0.87</span></td>
+                            <td><span class="status-dot red"></span><span data-i18n="demo.aml.statusEscalated">Escalated</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">SAR-2845</td>
+                            <td data-i18n="demo.aml.geographic">Geo anomaly</td>
+                            <td>ACC-****9914</td>
+                            <td>$8,200</td>
+                            <td><span class="risk-score risk-medium">0.65</span></td>
+                            <td><span class="status-dot green"></span><span data-i18n="demo.aml.statusCleared">Cleared</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Operations Tab -->
+        <div class="tab-content" id="operations">
+            <div class="grid grid-4 mb-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.ops.throughput">Throughput</span>
+                    </div>
+                    <div class="metric-value cyan">12.4K</div>
+                    <div class="metric-change">
+                        <span>rps</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.ops.latency">Latency p99</span>
+                    </div>
+                    <div class="metric-value green">18ms</div>
+                    <div class="metric-change positive">
+                        <span data-i18n="demo.ops.latencyTarget">target: < 50ms</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.ops.uptime">Uptime</span>
+                    </div>
+                    <div class="metric-value green">99.97%</div>
+                    <div class="metric-change positive">
+                        <span data-i18n="demo.ops.last30">last 30 days</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.ops.incidents">Инцидентов</span>
+                    </div>
+                    <div class="metric-value green">2</div>
+                    <div class="metric-change">
+                        <span data-i18n="demo.ops.thisMonth">за этот месяц</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2 mb-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.ops.volumeForecast">Прогноз объёмов (следующие 7 дней)</span>
+                    </div>
+                    <div class="chart-container">
+                        <div class="chart-bars">
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 126px;"><span class="chart-value">2.1M</span></div>
+                                <span class="chart-label">Пн</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 138px;"><span class="chart-value">2.3M</span></div>
+                                <span class="chart-label">Вт</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 144px;"><span class="chart-value">2.4M</span></div>
+                                <span class="chart-label">Ср</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 156px;"><span class="chart-value">2.6M</span></div>
+                                <span class="chart-label">Чт</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 174px;"><span class="chart-value">2.9M</span></div>
+                                <span class="chart-label">Пт</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar purple" style="height: 108px;"><span class="chart-value">1.8M</span></div>
+                                <span class="chart-label">Сб</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar purple" style="height: 102px;"><span class="chart-value">1.7M</span></div>
+                                <span class="chart-label">Вс</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stacked-bar-legend" style="margin-top: 1rem;">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--accent-cyan);"></span>
+                            <span data-i18n="demo.ops.actual">Факт / Прогноз</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--accent-purple);"></span>
+                            <span data-i18n="demo.ops.predicted">Прогноз (weekend)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.ops.routing">Маршрутизация платежей</span>
+                    </div>
+                    <div class="h-bar-chart">
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span>Provider A</span>
+                                <span>45% • 99.9% success</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 45%; background: var(--accent-green);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span>Provider B</span>
+                                <span>30% • 99.7% success</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 30%; background: var(--accent-cyan);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span>Provider C</span>
+                                <span>15% • 99.5% success</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 15%; background: var(--accent-amber);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span>Provider D (fallback)</span>
+                                <span>10% • 98.2% success</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 10%; background: var(--accent-purple);"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" data-i18n="demo.ops.rootCause">Root Cause Analysis — Последние инциденты</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="demo.ops.tableDate">Дата</th>
+                            <th data-i18n="demo.ops.tableIncident">Инцидент</th>
+                            <th data-i18n="demo.ops.tableCause">Причина</th>
+                            <th data-i18n="demo.ops.tableDuration">Длительность</th>
+                            <th data-i18n="demo.ops.tableImpact">Влияние</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">2025-12-01</td>
+                            <td data-i18n="demo.ops.incLatency">Рост latency</td>
+                            <td data-i18n="demo.ops.causeDb">DB connection pool exhaustion</td>
+                            <td>12 min</td>
+                            <td><span class="risk-score risk-medium" data-i18n="demo.ops.impactMedium">Medium</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">2025-11-28</td>
+                            <td data-i18n="demo.ops.incProvider">Provider timeout</td>
+                            <td data-i18n="demo.ops.causeProvider">Provider B network issues</td>
+                            <td>8 min</td>
+                            <td><span class="risk-score risk-low" data-i18n="demo.ops.impactLow">Low</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Volume Forecaster Tab -->
+        <div class="tab-content" id="forecast">
+            <div class="grid grid-4 mb-1">
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.forecast.today">Прогноз на сегодня</span>
+                        <span class="card-badge badge-green">±2.1%</span>
+                    </div>
+                    <div class="metric-value cyan">2.4M</div>
+                    <div class="metric-change">
+                        <span data-i18n="demo.forecast.transactions">транзакций</span>
+                    </div>
+                </div>
+
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.forecast.peakHour">Пиковый час</span>
+                        <span class="card-badge badge-amber">alert</span>
+                    </div>
+                    <div class="metric-value amber">14:00</div>
+                    <div class="metric-change">
+                        <span data-i18n="demo.forecast.peakLoad">~185K транзакций</span>
+                    </div>
+                </div>
+
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.forecast.accuracy">MAPE (7 дней)</span>
+                        <span class="card-badge badge-green">excellent</span>
+                    </div>
+                    <div class="metric-value green">2.3%</div>
+                    <div class="metric-change">
+                        <span data-i18n="demo.forecast.mapeTarget">target: < 5%</span>
+                    </div>
+                </div>
+
+                <div class="card animate-in">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.forecast.anomalies">Аномалии</span>
+                        <span class="card-badge badge-red">detected</span>
+                    </div>
+                    <div class="metric-value red">2</div>
+                    <div class="metric-change">
+                        <span data-i18n="demo.forecast.anomaliesDesc">за последние 24ч</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2 mb-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.forecast.weekly">Прогноз на неделю</span>
+                        <span class="live-indicator"><span class="live-dot"></span><span>LIVE</span></span>
+                    </div>
+                    <div class="chart-container" style="height: 220px;">
+                        <div class="chart-bars">
+                            <div class="chart-bar-group">
+                                <div class="chart-bar cyan" style="height: 144px;"><span class="chart-value">2.4M</span></div>
+                                <span class="chart-label">Сегодня</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar purple" style="height: 156px;"><span class="chart-value">2.6M</span></div>
+                                <span class="chart-label">Чт</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar purple" style="height: 180px;"><span class="chart-value">3.0M</span></div>
+                                <span class="chart-label">Пт</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar amber" style="height: 108px;"><span class="chart-value">1.8M</span></div>
+                                <span class="chart-label">Сб</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar amber" style="height: 96px;"><span class="chart-value">1.6M</span></div>
+                                <span class="chart-label">Вс</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar purple" style="height: 138px;"><span class="chart-value">2.3M</span></div>
+                                <span class="chart-label">Пн</span>
+                            </div>
+                            <div class="chart-bar-group">
+                                <div class="chart-bar purple" style="height: 150px;"><span class="chart-value">2.5M</span></div>
+                                <span class="chart-label">Вт</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stacked-bar-legend" style="margin-top: 1rem;">
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--accent-cyan);"></span>
+                            <span data-i18n="demo.forecast.actual">Факт</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--accent-purple);"></span>
+                            <span data-i18n="demo.forecast.predicted">Прогноз</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-dot" style="background: var(--accent-amber);"></span>
+                            <span data-i18n="demo.forecast.weekend">Выходные</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.forecast.hourly">Почасовой прогноз (сегодня)</span>
+                    </div>
+                    <div class="chart-container" style="height: 220px;">
+                        <svg viewBox="0 0 400 180" style="width: 100%; height: 100%;">
+                            <!-- Grid lines -->
+                            <line x1="40" y1="20" x2="390" y2="20" stroke="#27272a" stroke-width="1"/>
+                            <line x1="40" y1="60" x2="390" y2="60" stroke="#27272a" stroke-width="1"/>
+                            <line x1="40" y1="100" x2="390" y2="100" stroke="#27272a" stroke-width="1"/>
+                            <line x1="40" y1="140" x2="390" y2="140" stroke="#27272a" stroke-width="1"/>
+                            
+                            <!-- Y axis labels -->
+                            <text x="35" y="24" text-anchor="end" fill="#71717a" font-size="9" font-family="JetBrains Mono">200K</text>
+                            <text x="35" y="64" text-anchor="end" fill="#71717a" font-size="9" font-family="JetBrains Mono">150K</text>
+                            <text x="35" y="104" text-anchor="end" fill="#71717a" font-size="9" font-family="JetBrains Mono">100K</text>
+                            <text x="35" y="144" text-anchor="end" fill="#71717a" font-size="9" font-family="JetBrains Mono">50K</text>
+                            
+                            <!-- Actual line (cyan) - past hours -->
+                            <polyline 
+                                points="50,130 70,125 90,115 110,100 130,85 150,70 170,55 190,45 210,40"
+                                fill="none" 
+                                stroke="#00d4ff" 
+                                stroke-width="2.5"
+                            />
+                            
+                            <!-- Forecast line (purple dashed) - future hours -->
+                            <polyline 
+                                points="210,40 230,35 250,30 270,45 290,60 310,80 330,100 350,115 370,125"
+                                fill="none" 
+                                stroke="#8b5cf6" 
+                                stroke-width="2"
+                                stroke-dasharray="6 3"
+                            />
+                            
+                            <!-- Confidence interval (purple area) -->
+                            <polygon 
+                                points="210,40 230,30 250,22 270,35 290,48 310,65 330,82 350,95 370,105 370,145 350,135 330,118 310,95 290,72 270,55 250,38 230,40 210,40"
+                                fill="rgba(139, 92, 246, 0.15)"
+                            />
+                            
+                            <!-- Current time marker -->
+                            <line x1="210" y1="20" x2="210" y2="150" stroke="#00d4ff" stroke-width="1" stroke-dasharray="3 3"/>
+                            <circle cx="210" cy="40" r="5" fill="#00d4ff"/>
+                            <text x="210" y="165" text-anchor="middle" fill="#00d4ff" font-size="9" font-family="JetBrains Mono">Сейчас</text>
+                            
+                            <!-- Peak marker -->
+                            <circle cx="250" cy="30" r="4" fill="#f59e0b"/>
+                            <text x="250" y="18" text-anchor="middle" fill="#f59e0b" font-size="8" font-family="JetBrains Mono">Peak</text>
+                            
+                            <!-- X axis labels -->
+                            <text x="50" y="165" text-anchor="middle" fill="#71717a" font-size="8" font-family="JetBrains Mono">00</text>
+                            <text x="110" y="165" text-anchor="middle" fill="#71717a" font-size="8" font-family="JetBrains Mono">06</text>
+                            <text x="170" y="165" text-anchor="middle" fill="#71717a" font-size="8" font-family="JetBrains Mono">10</text>
+                            <text x="250" y="178" text-anchor="middle" fill="#f59e0b" font-size="8" font-family="JetBrains Mono">14:00</text>
+                            <text x="310" y="165" text-anchor="middle" fill="#71717a" font-size="8" font-family="JetBrains Mono">18</text>
+                            <text x="370" y="165" text-anchor="middle" fill="#71717a" font-size="8" font-family="JetBrains Mono">23</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-2 mb-1">
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.forecast.byChannel">Прогноз по каналам</span>
+                    </div>
+                    <div class="h-bar-chart">
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span>Mobile App</span>
+                                <span>1.2M • +8% vs прогноз</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 50%; background: var(--accent-green);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span>Web</span>
+                                <span>720K • -2% vs прогноз</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 30%; background: var(--accent-cyan);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span>API Partners</span>
+                                <span>360K • +1% vs прогноз</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 15%; background: var(--accent-purple);"></div></div>
+                        </div>
+                        <div class="h-bar-item">
+                            <div class="h-bar-label">
+                                <span>POS Terminals</span>
+                                <span>120K • -5% vs прогноз</span>
+                            </div>
+                            <div class="h-bar"><div class="h-bar-fill" style="width: 5%; background: var(--accent-amber);"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title" data-i18n="demo.forecast.alerts">Алерты прогнозирования</span>
+                    </div>
+                    <div class="activity-feed">
+                        <div class="activity-item">
+                            <div class="activity-icon blocked">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                                </svg>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title" style="color: var(--accent-red);" data-i18n="demo.forecast.alert1Title">Аномальный всплеск в 14:00</div>
+                                <div class="activity-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;" data-i18n="demo.forecast.alert1Desc">Прогнозируется +45% к типичной нагрузке. Рекомендуется проактивное масштабирование.</div>
+                                <div class="activity-meta">Уверенность: 94% • Рекомендация: Scale UP</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon review">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                                </svg>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title" style="color: var(--accent-amber);" data-i18n="demo.forecast.alert2Title">Пятничный пик выше нормы</div>
+                                <div class="activity-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;" data-i18n="demo.forecast.alert2Desc">Ожидается 3.0M транзакций (+15% к обычной пятнице). Возможно влияние Black Friday.</div>
+                                <div class="activity-meta">Уверенность: 87% • Рекомендация: Monitor</div>
+                            </div>
+                        </div>
+                        <div class="activity-item">
+                            <div class="activity-icon approved">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20 6 9 17 4 12"/>
+                                </svg>
+                            </div>
+                            <div class="activity-content">
+                                <div class="activity-title" style="color: var(--accent-green);" data-i18n="demo.forecast.alert3Title">Выходные в пределах нормы</div>
+                                <div class="activity-desc" style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 0.25rem;" data-i18n="demo.forecast.alert3Desc">Суббота и воскресенье соответствуют типичному паттерну. Дополнительных действий не требуется.</div>
+                                <div class="activity-meta">Уверенность: 96% • Статус: OK</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title" data-i18n="demo.forecast.accuracyTable">Точность прогнозов (последние 30 дней)</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th data-i18n="demo.forecast.tablePeriod">Период</th>
+                            <th data-i18n="demo.forecast.tableForecast">Прогноз</th>
+                            <th data-i18n="demo.forecast.tableActual">Факт</th>
+                            <th data-i18n="demo.forecast.tableError">Ошибка</th>
+                            <th>MAPE</th>
+                            <th data-i18n="demo.forecast.tableStatus">Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;" data-i18n="demo.forecast.row1Date">Вчера</td>
+                            <td>2.35M</td>
+                            <td>2.41M</td>
+                            <td style="color: var(--accent-green);">+2.5%</td>
+                            <td><span class="risk-score" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green);">2.5%</span></td>
+                            <td><span class="status-dot green"></span><span data-i18n="demo.forecast.statusExcellent">Excellent</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;" data-i18n="demo.forecast.row2Date">Пн, 2 дек</td>
+                            <td>2.28M</td>
+                            <td>2.31M</td>
+                            <td style="color: var(--accent-green);">+1.3%</td>
+                            <td><span class="risk-score" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green);">1.3%</span></td>
+                            <td><span class="status-dot green"></span><span data-i18n="demo.forecast.statusExcellent">Excellent</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;" data-i18n="demo.forecast.row3Date">Вс, 1 дек</td>
+                            <td>1.72M</td>
+                            <td>1.65M</td>
+                            <td style="color: var(--accent-amber);">-4.1%</td>
+                            <td><span class="risk-score" style="background: rgba(245, 158, 11, 0.2); color: var(--accent-amber);">4.1%</span></td>
+                            <td><span class="status-dot amber"></span><span data-i18n="demo.forecast.statusGood">Good</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;" data-i18n="demo.forecast.row4Date">Сб, 30 ноя</td>
+                            <td>1.85M</td>
+                            <td>1.79M</td>
+                            <td style="color: var(--accent-green);">-3.2%</td>
+                            <td><span class="risk-score" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green);">3.2%</span></td>
+                            <td><span class="status-dot green"></span><span data-i18n="demo.forecast.statusGood">Good</span></td>
+                        </tr>
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;" data-i18n="demo.forecast.row5Date">Пт, 29 ноя</td>
+                            <td>2.95M</td>
+                            <td>3.42M</td>
+                            <td style="color: var(--accent-red);">+15.9%</td>
+                            <td><span class="risk-score risk-high">15.9%</span></td>
+                            <td><span class="status-dot red"></span><span data-i18n="demo.forecast.statusBlackFriday">Black Friday</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Models Tab -->
+        <div class="tab-content" id="models">
+            <div class="grid grid-3 mb-1">
+                <div class="card">
+                    <div class="model-card">
+                        <div class="model-header">
+                            <div>
+                                <div class="model-name">fraud_detection_v3</div>
+                                <div class="model-version">v3.2.1 • XGBoost</div>
+                            </div>
+                            <span class="card-badge badge-green">Production</span>
+                        </div>
+                        <div class="model-stats">
+                            <div class="model-stat">
+                                <div class="model-stat-value">94.7%</div>
+                                <div class="model-stat-label">Accuracy</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">0.92</div>
+                                <div class="model-stat-label">F1 Score</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">18ms</div>
+                                <div class="model-stat-label">Latency</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span data-i18n="demo.models.drift">Model Drift</span>
+                                <span style="color: var(--accent-green);">Low</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill green" style="width: 12%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="model-card">
+                        <div class="model-header">
+                            <div>
+                                <div class="model-name">churn_predictor</div>
+                                <div class="model-version">v2.1.0 • LightGBM</div>
+                            </div>
+                            <span class="card-badge badge-green">Production</span>
+                        </div>
+                        <div class="model-stats">
+                            <div class="model-stat">
+                                <div class="model-stat-value">89.2%</div>
+                                <div class="model-stat-label">Accuracy</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">0.87</div>
+                                <div class="model-stat-label">F1 Score</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">24ms</div>
+                                <div class="model-stat-label">Latency</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span data-i18n="demo.models.drift">Model Drift</span>
+                                <span style="color: var(--accent-amber);">Medium</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill" style="width: 45%; background: var(--accent-amber);"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="model-card">
+                        <div class="model-header">
+                            <div>
+                                <div class="model-name">ltv_estimator</div>
+                                <div class="model-version">v1.4.2 • Neural Net</div>
+                            </div>
+                            <span class="card-badge badge-green">Production</span>
+                        </div>
+                        <div class="model-stats">
+                            <div class="model-stat">
+                                <div class="model-stat-value">91.5%</div>
+                                <div class="model-stat-label">Accuracy</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">0.89</div>
+                                <div class="model-stat-label">F1 Score</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">45ms</div>
+                                <div class="model-stat-label">Latency</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span data-i18n="demo.models.drift">Model Drift</span>
+                                <span style="color: var(--accent-green);">Low</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill green" style="width: 8%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-3">
+                <div class="card">
+                    <div class="model-card">
+                        <div class="model-header">
+                            <div>
+                                <div class="model-name">aml_detector</div>
+                                <div class="model-version">v2.0.3 • GNN + XGBoost</div>
+                            </div>
+                            <span class="card-badge badge-green">Production</span>
+                        </div>
+                        <div class="model-stats">
+                            <div class="model-stat">
+                                <div class="model-stat-value">92.1%</div>
+                                <div class="model-stat-label">Accuracy</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">0.88</div>
+                                <div class="model-stat-label">F1 Score</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">120ms</div>
+                                <div class="model-stat-label">Latency</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span data-i18n="demo.models.drift">Model Drift</span>
+                                <span style="color: var(--accent-green);">Low</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill green" style="width: 15%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="model-card">
+                        <div class="model-header">
+                            <div>
+                                <div class="model-name">volume_forecaster</div>
+                                <div class="model-version">v1.2.0 • Prophet + LSTM</div>
+                            </div>
+                            <span class="card-badge badge-green">Production</span>
+                        </div>
+                        <div class="model-stats">
+                            <div class="model-stat">
+                                <div class="model-stat-value">96.3%</div>
+                                <div class="model-stat-label">Accuracy</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">0.94</div>
+                                <div class="model-stat-label">F1 Score</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">85ms</div>
+                                <div class="model-stat-label">Latency</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span data-i18n="demo.models.drift">Model Drift</span>
+                                <span style="color: var(--accent-green);">Low</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill green" style="width: 6%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="model-card">
+                        <div class="model-header">
+                            <div>
+                                <div class="model-name">routing_optimizer</div>
+                                <div class="model-version">v1.0.1 • Reinforcement Learning</div>
+                            </div>
+                            <span class="card-badge badge-amber">Staging</span>
+                        </div>
+                        <div class="model-stats">
+                            <div class="model-stat">
+                                <div class="model-stat-value">+2.3%</div>
+                                <div class="model-stat-label">Success Δ</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">-0.8%</div>
+                                <div class="model-stat-label">Cost Δ</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">35ms</div>
+                                <div class="model-stat-label">Latency</div>
+                            </div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span data-i18n="demo.models.testing">A/B Testing</span>
+                                <span style="color: var(--accent-cyan);">78%</span>
+                            </div>
+                            <div class="progress-bar"><div class="progress-fill cyan" style="width: 78%;"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Tab switching
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Localization
+        const translations = {
+            ru: {
+                'demo.badge': 'Интерактивное демо',
+                'demo.back': 'На главную',
+                'demo.disclaimer': '<strong>Демонстрационный дашборд.</strong> Финальный вид и функциональность определяются индивидуально под задачи вашего бизнеса.',
+                'demo.title': 'ML Analytics Dashboard',
+                'demo.subtitle': 'Мониторинг моделей и бизнес-метрик в реальном времени',
+                'demo.tabs.fraud': 'Fraud Detection',
+                'demo.tabs.churn': 'Churn & LTV',
+                'demo.tabs.aml': 'AML / KYC',
+                'demo.tabs.operations': 'Operations',
+                'demo.tabs.forecast': 'Прогноз объёмов',
+                'demo.tabs.models': 'Модели',
+                // Forecast
+                'demo.forecast.today': 'Прогноз на сегодня',
+                'demo.forecast.transactions': 'транзакций',
+                'demo.forecast.peakHour': 'Пиковый час',
+                'demo.forecast.peakLoad': '~185K транзакций',
+                'demo.forecast.accuracy': 'MAPE (7 дней)',
+                'demo.forecast.mapeTarget': 'цель: < 5%',
+                'demo.forecast.anomalies': 'Аномалии',
+                'demo.forecast.anomaliesDesc': 'за последние 24ч',
+                'demo.forecast.weekly': 'Прогноз на неделю',
+                'demo.forecast.hourly': 'Почасовой прогноз (сегодня)',
+                'demo.forecast.actual': 'Факт',
+                'demo.forecast.predicted': 'Прогноз',
+                'demo.forecast.weekend': 'Выходные',
+                'demo.forecast.byChannel': 'Прогноз по каналам',
+                'demo.forecast.alerts': 'Алерты прогнозирования',
+                'demo.forecast.alert1Title': 'Аномальный всплеск в 14:00',
+                'demo.forecast.alert1Desc': 'Прогнозируется +45% к типичной нагрузке. Рекомендуется проактивное масштабирование.',
+                'demo.forecast.alert2Title': 'Пятничный пик выше нормы',
+                'demo.forecast.alert2Desc': 'Ожидается 3.0M транзакций (+15% к обычной пятнице). Возможно влияние Black Friday.',
+                'demo.forecast.alert3Title': 'Выходные в пределах нормы',
+                'demo.forecast.alert3Desc': 'Суббота и воскресенье соответствуют типичному паттерну. Дополнительных действий не требуется.',
+                'demo.forecast.tablePeriod': 'Период',
+                'demo.forecast.tableForecast': 'Прогноз',
+                'demo.forecast.tableActual': 'Факт',
+                'demo.forecast.tableError': 'Ошибка',
+                'demo.forecast.tableStatus': 'Статус',
+                'demo.forecast.row1Date': 'Вчера',
+                'demo.forecast.row2Date': 'Пн, 2 дек',
+                'demo.forecast.row3Date': 'Вс, 1 дек',
+                'demo.forecast.row4Date': 'Сб, 30 ноя',
+                'demo.forecast.row5Date': 'Пт, 29 ноя',
+                'demo.forecast.statusExcellent': 'Отлично',
+                'demo.forecast.statusGood': 'Хорошо',
+                'demo.forecast.statusBlackFriday': 'Black Friday',
+                'demo.forecast.accuracyTable': 'Точность прогнозов (последние 30 дней)',
+                // Fraud
+                'demo.fraud.blocked': 'Заблокировано сегодня',
+                'demo.fraud.accuracy': 'Точность модели',
+                'demo.fraud.falsePositive': 'False Positive Rate',
+                'demo.fraud.vsYesterday': 'вчера: 281',
+                'demo.fraud.target': 'цель: < 0.5%',
+                'demo.fraud.weeklyBlocked': 'Заблокированные транзакции (неделя)',
+                'demo.fraud.riskDistribution': 'Распределение по уровню риска',
+                'demo.fraud.lowRisk': 'Низкий (70%)',
+                'demo.fraud.mediumRisk': 'Средний (20%)',
+                'demo.fraud.highRisk': 'Высокий (10%)',
+                'demo.fraud.cardNotPresent': 'Без карты (CNP)',
+                'demo.fraud.accountTakeover': 'Захват аккаунта',
+                'demo.fraud.synthetic': 'Синтетическая личность',
+                'demo.fraud.friendly': 'Дружественный фрод',
+                'demo.fraud.other': 'Другое',
+                'demo.fraud.recentAlerts': 'Активные алерты',
+                'demo.fraud.alert1Title': 'CNP-фрод — $12,450',
+                'demo.fraud.alert1Desc': 'Карта зарегистрирована в США, транзакция из Нигерии. IP не совпадает с историей. Новый отпечаток устройства.',
+                'demo.fraud.alert2Title': 'Захват аккаунта — $8,200',
+                'demo.fraud.alert2Desc': 'Смена пароля 10 мин назад с нового устройства. Попытка вывода на новый кошелёк. Паттерн не соответствует истории.',
+                'demo.fraud.alert3Title': 'Velocity Alert — $3,450',
+                'demo.fraud.alert3Desc': '5 транзакций за последние 10 минут. Общая сумма превышает типичный дневной лимит на 340%.',
+                'demo.fraud.alert4Title': 'Гео-аномалия — $2,100',
+                'demo.fraud.alert4Desc': 'Транзакция из Сингапура через 2 часа после транзакции из Москвы. Физически невозможное перемещение.',
+                'demo.fraud.byType': 'Типы мошенничества',
+                // Churn
+                'demo.churn.atRisk': 'Клиентов в зоне риска',
+                'demo.churn.ofTotal': 'из 45,892 активных',
+                'demo.churn.retained': 'Удержано за месяц',
+                'demo.churn.retentionRate': 'коэффициент удержания: 67%',
+                'demo.churn.avgLtv': 'Средний LTV',
+                'demo.churn.predicted': 'прогноз на 12 месяцев',
+                'demo.churn.probability': 'Вероятность оттока по когортам',
+                'demo.churn.ltvSegments': 'LTV по сегментам',
+                'demo.churn.segments': 'Сегментация клиентской базы',
+                'demo.churn.segmentVip': 'VIP (высокий LTV)',
+                'demo.churn.segmentActive': 'Активные',
+                'demo.churn.segmentSleeping': 'Спящие',
+                'demo.churn.segmentNew': 'Новые (< 30д)',
+                // AML
+                'demo.aml.alerts': 'SAR-алертов сегодня',
+                'demo.aml.pending': '12 на рассмотрении',
+                'demo.aml.verified': 'Верификаций KYC',
+                'demo.aml.autoApproved': '94% авто-одобрено',
+                'demo.aml.suspicious': 'Подозрительных связей',
+                'demo.aml.networks': 'в 8 сетях',
+                'demo.aml.alertTypes': 'Типы алертов (месяц)',
+                'demo.aml.structuring': 'Дробление',
+                'demo.aml.velocity': 'Velocity',
+                'demo.aml.geographic': 'Geo',
+                'demo.aml.behavioral': 'Поведение',
+                'demo.aml.sanctions': 'Санкции',
+                'demo.aml.graphTitle': 'Связи пользователя ACC-****7721',
+                'demo.aml.mainEntity': 'Исследуемый аккаунт',
+                'demo.aml.relatedEntity': 'Связанные',
+                'demo.aml.suspiciousEntity': 'SAR-алерт',
+                'demo.aml.recentAlerts': 'Последние SAR-алерты',
+                'demo.aml.tableType': 'Тип',
+                'demo.aml.tableEntity': 'Сущность',
+                'demo.aml.tableAmount': 'Сумма',
+                'demo.aml.tableRisk': 'Риск',
+                'demo.aml.tableStatus': 'Статус',
+                'demo.aml.statusReview': 'На проверке',
+                'demo.aml.statusEscalated': 'Эскалирован',
+                'demo.aml.statusCleared': 'Закрыт',
+                // Operations
+                'demo.ops.throughput': 'Throughput',
+                'demo.ops.latency': 'Latency p99',
+                'demo.ops.latencyTarget': 'цель: < 50ms',
+                'demo.ops.uptime': 'Uptime',
+                'demo.ops.last30': 'за 30 дней',
+                'demo.ops.incidents': 'Инцидентов',
+                'demo.ops.thisMonth': 'за этот месяц',
+                'demo.ops.volumeForecast': 'Прогноз объёмов (следующие 7 дней)',
+                'demo.ops.actual': 'Факт / Прогноз',
+                'demo.ops.predicted': 'Прогноз (weekend)',
+                'demo.ops.routing': 'Маршрутизация платежей',
+                'demo.ops.rootCause': 'Root Cause Analysis — Последние инциденты',
+                'demo.ops.tableDate': 'Дата',
+                'demo.ops.tableIncident': 'Инцидент',
+                'demo.ops.tableCause': 'Причина',
+                'demo.ops.tableDuration': 'Длительность',
+                'demo.ops.tableImpact': 'Влияние',
+                'demo.ops.incLatency': 'Рост latency',
+                'demo.ops.causeDb': 'Исчерпание пула соединений БД',
+                'demo.ops.impactMedium': 'Средний',
+                'demo.ops.incProvider': 'Таймаут провайдера',
+                'demo.ops.causeProvider': 'Сетевые проблемы Provider B',
+                'demo.ops.impactLow': 'Низкий',
+                // Models
+                'demo.models.drift': 'Дрейф модели',
+                'demo.models.testing': 'A/B тестирование'
+            },
+            en: {
+                'demo.badge': 'Interactive Demo',
+                'demo.back': 'Back to Home',
+                'demo.disclaimer': '<strong>Demo Dashboard.</strong> Final design and functionality are customized to your business requirements.',
+                'demo.title': 'ML Analytics Dashboard',
+                'demo.subtitle': 'Real-time model and business metrics monitoring',
+                'demo.tabs.fraud': 'Fraud Detection',
+                'demo.tabs.churn': 'Churn & LTV',
+                'demo.tabs.aml': 'AML / KYC',
+                'demo.tabs.operations': 'Operations',
+                'demo.tabs.forecast': 'Volume Forecaster',
+                'demo.tabs.models': 'Models',
+                // Forecast
+                'demo.forecast.today': 'Today\'s Forecast',
+                'demo.forecast.transactions': 'transactions',
+                'demo.forecast.peakHour': 'Peak Hour',
+                'demo.forecast.peakLoad': '~185K transactions',
+                'demo.forecast.accuracy': 'MAPE (7 days)',
+                'demo.forecast.mapeTarget': 'target: < 5%',
+                'demo.forecast.anomalies': 'Anomalies',
+                'demo.forecast.anomaliesDesc': 'in last 24h',
+                'demo.forecast.weekly': 'Weekly Forecast',
+                'demo.forecast.hourly': 'Hourly Forecast (today)',
+                'demo.forecast.actual': 'Actual',
+                'demo.forecast.predicted': 'Forecast',
+                'demo.forecast.weekend': 'Weekend',
+                'demo.forecast.byChannel': 'Forecast by Channel',
+                'demo.forecast.alerts': 'Forecasting Alerts',
+                'demo.forecast.alert1Title': 'Anomalous spike at 14:00',
+                'demo.forecast.alert1Desc': 'Expected +45% above typical load. Proactive scaling recommended.',
+                'demo.forecast.alert2Title': 'Friday peak above normal',
+                'demo.forecast.alert2Desc': 'Expected 3.0M transactions (+15% vs typical Friday). Possible Black Friday effect.',
+                'demo.forecast.alert3Title': 'Weekend within normal range',
+                'demo.forecast.alert3Desc': 'Saturday and Sunday match typical pattern. No additional actions required.',
+                'demo.forecast.tablePeriod': 'Period',
+                'demo.forecast.tableForecast': 'Forecast',
+                'demo.forecast.tableActual': 'Actual',
+                'demo.forecast.tableError': 'Error',
+                'demo.forecast.tableStatus': 'Status',
+                'demo.forecast.row1Date': 'Yesterday',
+                'demo.forecast.row2Date': 'Mon, Dec 2',
+                'demo.forecast.row3Date': 'Sun, Dec 1',
+                'demo.forecast.row4Date': 'Sat, Nov 30',
+                'demo.forecast.row5Date': 'Fri, Nov 29',
+                'demo.forecast.statusExcellent': 'Excellent',
+                'demo.forecast.statusGood': 'Good',
+                'demo.forecast.statusBlackFriday': 'Black Friday',
+                'demo.forecast.accuracyTable': 'Forecast Accuracy (last 30 days)',
+                // Fraud
+                'demo.fraud.blocked': 'Blocked Today',
+                'demo.fraud.accuracy': 'Model Accuracy',
+                'demo.fraud.falsePositive': 'False Positive Rate',
+                'demo.fraud.vsYesterday': 'vs. yesterday: 281',
+                'demo.fraud.target': 'target: < 0.5%',
+                'demo.fraud.weeklyBlocked': 'Blocked Transactions (week)',
+                'demo.fraud.riskDistribution': 'Risk Level Distribution',
+                'demo.fraud.lowRisk': 'Low (70%)',
+                'demo.fraud.mediumRisk': 'Medium (20%)',
+                'demo.fraud.highRisk': 'High (10%)',
+                'demo.fraud.cardNotPresent': 'Card Not Present',
+                'demo.fraud.accountTakeover': 'Account Takeover',
+                'demo.fraud.synthetic': 'Synthetic Identity',
+                'demo.fraud.other': 'Other',
+                'demo.fraud.recentActivity': 'Recent Activity',
+                'demo.fraud.cardNotPresent': 'Card Not Present',
+                'demo.fraud.accountTakeover': 'Account Takeover',
+                'demo.fraud.synthetic': 'Synthetic Identity',
+                'demo.fraud.friendly': 'Friendly Fraud',
+                'demo.fraud.other': 'Other',
+                'demo.fraud.recentAlerts': 'Active Alerts',
+                'demo.fraud.alert1Title': 'Card Not Present Fraud — $12,450',
+                'demo.fraud.alert1Desc': 'Card registered in USA, transaction from Nigeria. IP mismatch with history. New device fingerprint.',
+                'demo.fraud.alert2Title': 'Account Takeover — $8,200',
+                'demo.fraud.alert2Desc': 'Password changed 10 min ago from new device. Withdrawal attempt to new wallet. Pattern mismatch.',
+                'demo.fraud.alert3Title': 'Velocity Alert — $3,450',
+                'demo.fraud.alert3Desc': '5 transactions in last 10 minutes. Total exceeds typical daily limit by 340%.',
+                'demo.fraud.alert4Title': 'Geo Anomaly — $2,100',
+                'demo.fraud.alert4Desc': 'Transaction from Singapore 2 hours after Moscow transaction. Physically impossible travel.',
+                'demo.fraud.byType': 'Fraud Types',
+                // Churn
+                'demo.churn.atRisk': 'At-Risk Customers',
+                'demo.churn.ofTotal': 'of 45,892 active',
+                'demo.churn.retained': 'Retained This Month',
+                'demo.churn.retentionRate': 'retention rate: 67%',
+                'demo.churn.avgLtv': 'Average LTV',
+                'demo.churn.predicted': 'predicted 12-month',
+                'demo.churn.probability': 'Churn Probability by Cohort',
+                'demo.churn.ltvSegments': 'LTV by Segment',
+                'demo.churn.segments': 'Customer Segmentation',
+                'demo.churn.segmentVip': 'VIP (high LTV)',
+                'demo.churn.segmentActive': 'Active',
+                'demo.churn.segmentSleeping': 'Dormant',
+                'demo.churn.segmentNew': 'New (< 30d)',
+                // AML
+                'demo.aml.alerts': 'SAR Alerts Today',
+                'demo.aml.pending': '12 pending review',
+                'demo.aml.verified': 'KYC Verifications',
+                'demo.aml.autoApproved': '94% auto-approved',
+                'demo.aml.suspicious': 'Suspicious Links',
+                'demo.aml.networks': 'in 8 networks',
+                'demo.aml.alertTypes': 'Alert Types (month)',
+                'demo.aml.structuring': 'Structuring',
+                'demo.aml.velocity': 'Velocity',
+                'demo.aml.geographic': 'Geo',
+                'demo.aml.behavioral': 'Behavioral',
+                'demo.aml.sanctions': 'Sanctions',
+                'demo.aml.graphTitle': 'User Links ACC-****7721',
+                'demo.aml.mainEntity': 'Investigated Account',
+                'demo.aml.relatedEntity': 'Related',
+                'demo.aml.suspiciousEntity': 'SAR Alert',
+                'demo.aml.recentAlerts': 'Recent SAR Alerts',
+                'demo.aml.tableType': 'Type',
+                'demo.aml.tableEntity': 'Entity',
+                'demo.aml.tableAmount': 'Amount',
+                'demo.aml.tableRisk': 'Risk',
+                'demo.aml.tableStatus': 'Status',
+                'demo.aml.statusReview': 'Review',
+                'demo.aml.statusEscalated': 'Escalated',
+                'demo.aml.statusCleared': 'Cleared',
+                // Operations
+                'demo.ops.throughput': 'Throughput',
+                'demo.ops.latency': 'Latency p99',
+                'demo.ops.latencyTarget': 'target: < 50ms',
+                'demo.ops.uptime': 'Uptime',
+                'demo.ops.last30': 'last 30 days',
+                'demo.ops.incidents': 'Incidents',
+                'demo.ops.thisMonth': 'this month',
+                'demo.ops.volumeForecast': 'Volume Forecast (next 7 days)',
+                'demo.ops.actual': 'Actual / Forecast',
+                'demo.ops.predicted': 'Forecast (weekend)',
+                'demo.ops.routing': 'Payment Routing',
+                'demo.ops.rootCause': 'Root Cause Analysis — Recent Incidents',
+                'demo.ops.tableDate': 'Date',
+                'demo.ops.tableIncident': 'Incident',
+                'demo.ops.tableCause': 'Cause',
+                'demo.ops.tableDuration': 'Duration',
+                'demo.ops.tableImpact': 'Impact',
+                'demo.ops.incLatency': 'Latency spike',
+                'demo.ops.causeDb': 'DB connection pool exhaustion',
+                'demo.ops.impactMedium': 'Medium',
+                'demo.ops.incProvider': 'Provider timeout',
+                'demo.ops.causeProvider': 'Provider B network issues',
+                'demo.ops.impactLow': 'Low',
+                // Models
+                'demo.models.drift': 'Model Drift',
+                'demo.models.testing': 'A/B Testing'
+            }
+        };
+
+        let currentLang = 'ru';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            document.documentElement.lang = lang;
+
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Update chart labels
+            const daysRu = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+            const daysEn = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const days = lang === 'ru' ? daysRu : daysEn;
+            
+            document.querySelectorAll('.chart-bars').forEach(chart => {
+                const labels = chart.querySelectorAll('.chart-label');
+                labels.forEach((label, i) => {
+                    if (days[i] && !label.closest('#churn')) {
+                        label.textContent = days[i];
+                    }
+                });
+            });
+        }
+
+        function getDefaultLanguage() {
+            const stored = localStorage.getItem('lang');
+            if (stored) return stored;
+            const browserLang = navigator.language || navigator.userLanguage;
+            return browserLang.startsWith('ru') ? 'ru' : 'en';
+        }
+
+        setLanguage(getDefaultLanguage());
+
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+        });
+    </script>
+</body>
+</html>

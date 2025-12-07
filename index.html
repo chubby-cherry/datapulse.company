@@ -1,0 +1,2754 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataPulse — Data Science для финтеха</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0b0f;
+            --bg-secondary: #12141a;
+            --bg-tertiary: #1a1d26;
+            --accent-cyan: #00d4ff;
+            --accent-purple: #8b5cf6;
+            --text-primary: #e4e4e7;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: rgba(255, 255, 255, 0.06);
+            --glow-cyan: rgba(0, 212, 255, 0.15);
+            --glow-purple: rgba(139, 92, 246, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Manrope', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Background Grid Animation */
+        .bg-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background-image: 
+                linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(60px, 60px); }
+        }
+
+        /* Floating Data Particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--accent-cyan);
+            opacity: 0.15;
+            animation: float 15s linear infinite;
+        }
+
+        .particle:nth-child(odd) {
+            color: var(--accent-purple);
+        }
+
+        .particle:nth-child(3n) {
+            color: var(--accent-green);
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.15; }
+            90% { opacity: 0.15; }
+            100% { transform: translateY(-100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* Header */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            padding: 1.5rem 3rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-primary);
+            overflow: hidden;
+            transition: padding 0.3s ease, background 0.3s ease;
+        }
+
+        header::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(to bottom, var(--bg-primary), transparent);
+            pointer-events: none;
+            transition: background 0.3s ease;
+        }
+
+        header.scrolled {
+            padding: 0.75rem 3rem;
+            background: var(--bg-secondary);
+        }
+
+        header.scrolled::after {
+            background: linear-gradient(to bottom, var(--bg-secondary), transparent);
+        }
+
+        header.scrolled .logo {
+            font-size: 1.8rem;
+        }
+
+        header.scrolled .logo-dot {
+            width: 12px;
+            height: 12px;
+        }
+
+        header.scrolled .oscilloscope {
+            opacity: 0.5;
+        }
+
+        .oscilloscope {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .oscilloscope svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .wave-line {
+            fill: none;
+            stroke: var(--accent-cyan);
+            stroke-width: 1.5;
+            opacity: 0.15;
+            filter: drop-shadow(0 0 3px var(--accent-cyan));
+        }
+
+        .wave-line:nth-child(2) {
+            opacity: 0.1;
+            stroke-width: 1;
+            animation-delay: -2s;
+        }
+
+        .wave-line:nth-child(3) {
+            opacity: 0.08;
+            stroke-width: 0.8;
+            animation-delay: -4s;
+        }
+
+        header > *:not(.oscilloscope) {
+            position: relative;
+            z-index: 1;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 700;
+            font-size: 2.8rem;
+            letter-spacing: -0.03em;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: font-size 0.3s ease;
+        }
+
+        .logo-text {
+            display: flex;
+            align-items: baseline;
+        }
+
+        .logo-data {
+            background: linear-gradient(135deg, var(--accent-cyan), #00a8cc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .logo-pulse {
+            color: var(--text-primary);
+            position: relative;
+        }
+
+        .logo-dot {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            margin-left: 5px;
+            position: relative;
+            top: -2px;
+            vertical-align: middle;
+            box-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--glow-cyan);
+            animation: logoPulse 1.5s ease-in-out infinite;
+            transition: width 0.3s ease, height 0.3s ease;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { 
+                transform: scale(1);
+                opacity: 1;
+                box-shadow: 0 0 10px var(--accent-cyan), 0 0 20px var(--glow-cyan);
+            }
+            50% { 
+                transform: scale(1.4);
+                opacity: 0.85;
+                box-shadow: 0 0 20px var(--accent-cyan), 0 0 40px var(--glow-cyan), 0 0 60px var(--glow-cyan);
+            }
+        }
+
+        .logo:hover .logo-dot {
+            animation: logoPulse 0.4s ease-in-out infinite;
+        }
+
+        nav {
+            display: flex;
+            gap: 2.5rem;
+        }
+
+        nav a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .cta-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: 1px solid var(--accent-cyan);
+            color: var(--accent-cyan);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .cta-btn:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            box-shadow: 0 0 30px var(--glow-cyan);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .lang-switcher {
+            display: flex;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 2px;
+            border: 1px solid var(--border-color);
+        }
+
+        .lang-btn {
+            padding: 0.4rem 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .lang-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .lang-btn.active {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+        }
+
+        .demo-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: color 0.3s;
+            padding: 0.5rem 0;
+        }
+
+        .demo-link:hover {
+            color: var(--accent-cyan);
+        }
+
+        /* Hero Section */
+        .hero {
+            position: relative;
+            min-height: 100vh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 10rem 3rem 4rem;
+            z-index: 2;
+            gap: 4rem;
+        }
+
+        .hero-content {
+            max-width: 600px;
+            flex-shrink: 0;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .badge-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 6vw, 4.5rem);
+            font-weight: 700;
+            line-height: 1.1;
+            letter-spacing: -0.03em;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease-out 0.1s both;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-desc {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 1.5rem;
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+        }
+
+        .hero-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem 2.5rem;
+            margin-bottom: 2.5rem;
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+        }
+
+        .hero-feature {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .hero-feature svg {
+            color: var(--accent-cyan);
+            flex-shrink: 0;
+        }
+
+        .hero-feature em {
+            font-style: normal;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 1rem;
+            animation: fadeInUp 0.8s ease-out 0.3s both;
+        }
+
+        .btn-primary {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            color: var(--bg-primary);
+            font-family: 'Manrope', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px var(--glow-cyan);
+        }
+
+        .btn-secondary {
+            padding: 1rem 2rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            font-family: 'Manrope', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent-cyan);
+            background: var(--bg-tertiary);
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Data Visualization Hero Element */
+        .hero-visual {
+            flex: 1;
+            max-width: 520px;
+            min-width: 400px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            margin-top: 4.5rem;
+        }
+
+        .data-transform {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+            width: 100%;
+        }
+
+        /* Chaotic data side */
+        .chaos-data {
+            width: 140px;
+            flex-shrink: 0;
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            justify-content: center;
+            gap: 6px;
+            padding: 0;
+        }
+
+        .chaos-item {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            padding: 4px 8px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-muted);
+            opacity: 0.6;
+            animation: chaosFloat 3s ease-in-out infinite;
+        }
+
+        .chaos-item:nth-child(1) { animation-delay: 0s; transform: rotate(-5deg); }
+        .chaos-item:nth-child(2) { animation-delay: 0.2s; transform: rotate(3deg); }
+        .chaos-item:nth-child(3) { animation-delay: 0.4s; transform: rotate(-2deg); }
+        .chaos-item:nth-child(4) { animation-delay: 0.6s; transform: rotate(4deg); }
+        .chaos-item:nth-child(5) { animation-delay: 0.8s; transform: rotate(-3deg); }
+        .chaos-item:nth-child(6) { animation-delay: 1s; transform: rotate(2deg); }
+        .chaos-item:nth-child(7) { animation-delay: 1.2s; transform: rotate(-4deg); }
+        .chaos-item:nth-child(8) { animation-delay: 1.4s; transform: rotate(5deg); }
+        .chaos-item:nth-child(9) { animation-delay: 1.6s; transform: rotate(-1deg); }
+        .chaos-item:nth-child(10) { animation-delay: 1.8s; transform: rotate(3deg); }
+        .chaos-item:nth-child(11) { animation-delay: 2s; transform: rotate(-2deg); }
+        .chaos-item:nth-child(12) { animation-delay: 2.2s; transform: rotate(1deg); }
+
+        @keyframes chaosFloat {
+            0%, 100% { transform: translate(0, 0) rotate(var(--rot, 0deg)); }
+            25% { transform: translate(3px, -5px) rotate(var(--rot, 0deg)); }
+            50% { transform: translate(-2px, 3px) rotate(var(--rot, 0deg)); }
+            75% { transform: translate(4px, 2px) rotate(var(--rot, 0deg)); }
+        }
+
+        /* Arrow / Process */
+        .insights-with-arrows {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .insight-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .arrow-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .arrow-line {
+            width: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--text-muted), var(--accent-cyan));
+            position: relative;
+        }
+
+        .arrow-line::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -4px;
+            width: 0;
+            height: 0;
+            border-left: 10px solid var(--accent-cyan);
+            border-top: 5px solid transparent;
+            border-bottom: 5px solid transparent;
+        }
+
+        .arrow-particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .arrow-particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            top: -1px;
+            animation: flowParticle 1.5s linear infinite;
+            box-shadow: 0 0 6px var(--accent-cyan);
+        }
+
+        .arrow-particle:nth-child(1) { animation-delay: 0s; }
+        .arrow-particle:nth-child(2) { animation-delay: 0.5s; }
+        .arrow-particle:nth-child(3) { animation-delay: 1s; }
+
+        @keyframes flowParticle {
+            0% { left: 0; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { left: 100%; opacity: 0; }
+        }
+
+        .transform-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 8px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            opacity: 0.8;
+        }
+
+        /* Organized data side */
+        .insight-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: insightAppear 0.5s ease-out both;
+            transition: all 0.3s;
+            flex: 1;
+        }
+
+        .insight-card:hover {
+            border-color: var(--accent-cyan);
+            transform: translateX(5px);
+        }
+
+        .insight-row:nth-child(1) .insight-card { animation-delay: 0.5s; }
+        .insight-row:nth-child(2) .insight-card { animation-delay: 0.7s; }
+        .insight-row:nth-child(3) .insight-card { animation-delay: 0.9s; }
+
+        .insight-row:nth-child(2) .arrow-particle { animation-delay: 0.2s; }
+        .insight-row:nth-child(2) .arrow-particle:nth-child(2) { animation-delay: 0.7s; }
+        .insight-row:nth-child(2) .arrow-particle:nth-child(3) { animation-delay: 1.2s; }
+
+        .insight-row:nth-child(3) .arrow-particle { animation-delay: 0.4s; }
+        .insight-row:nth-child(3) .arrow-particle:nth-child(2) { animation-delay: 0.9s; }
+        .insight-row:nth-child(3) .arrow-particle:nth-child(3) { animation-delay: 1.4s; }
+
+        @keyframes insightAppear {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .insight-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 212, 255, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            color: var(--accent-cyan);
+        }
+
+        .insight-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .insight-title {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .insight-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .insight-value.negative {
+            color: var(--text-primary);
+        }
+
+        .insight-value.positive {
+            color: var(--accent-cyan);
+        }
+
+        .insight-chart {
+            width: 50px;
+            height: 24px;
+            display: flex;
+            align-items: flex-end;
+            gap: 3px;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: var(--accent-cyan);
+            border-radius: 2px;
+            opacity: 0.5;
+            animation: barGrow 2s ease-out infinite;
+        }
+
+        .chart-bar:nth-child(1) { height: 40%; animation-delay: 0s; }
+        .chart-bar:nth-child(2) { height: 70%; animation-delay: 0.1s; }
+        .chart-bar:nth-child(3) { height: 50%; animation-delay: 0.2s; }
+        .chart-bar:nth-child(4) { height: 90%; animation-delay: 0.3s; }
+        .chart-bar:nth-child(5) { height: 65%; animation-delay: 0.4s; }
+
+        @keyframes barGrow {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .data-ring {
+            position: absolute;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            animation: rotate 20s linear infinite;
+        }
+
+        .data-ring:nth-child(1) {
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        .data-ring:nth-child(2) {
+            width: 75%;
+            height: 75%;
+            top: 12.5%;
+            left: 12.5%;
+            animation-direction: reverse;
+            animation-duration: 15s;
+        }
+
+        .data-ring:nth-child(3) {
+            width: 50%;
+            height: 50%;
+            top: 25%;
+            left: 25%;
+            animation-duration: 10s;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .data-node {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--accent-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--accent-cyan);
+        }
+
+        /* Stats Section */
+        .stats {
+            position: relative;
+            z-index: 2;
+            padding: 4rem 3rem;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 2rem;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            background: var(--bg-secondary);
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .stat-value {
+            font-size: 3rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+        }
+
+        .stats-disclaimer {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            opacity: 0.7;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 1rem;
+        }
+
+        /* Services Section */
+        .services {
+            position: relative;
+            z-index: 2;
+            padding: 8rem 3rem;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 4rem;
+        }
+
+        .section-tag {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 100px;
+            font-size: 0.8rem;
+            color: var(--accent-cyan);
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: clamp(2rem, 4vw, 3rem);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+        }
+
+        .section-desc {
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .services-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .service-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .service-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple));
+            transform: scaleX(0);
+            transition: transform 0.4s;
+        }
+
+        .service-card:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        .service-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .service-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15), rgba(0, 212, 255, 0.05));
+            border: 1px solid rgba(0, 212, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            color: var(--accent-cyan);
+        }
+
+        .service-card h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .service-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .service-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .service-tag {
+            padding: 0.25rem 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 100px;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Process Section */
+        .process {
+            position: relative;
+            z-index: 2;
+            padding: 8rem 3rem;
+            background: var(--bg-secondary);
+        }
+
+        .process-flow {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .process-flow::before {
+            content: '';
+            position: absolute;
+            top: 40px;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple), var(--accent-green));
+            z-index: 0;
+        }
+
+        .process-step {
+            flex: 1;
+            max-width: 250px;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .step-number {
+            width: 80px;
+            height: 80px;
+            background: var(--bg-primary);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--accent-cyan);
+            margin: 0 auto 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .process-step:hover .step-number {
+            background: var(--accent-cyan);
+            color: var(--bg-primary);
+            box-shadow: 0 0 40px var(--glow-cyan);
+        }
+
+        .process-step h4 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .process-step p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Audience Section */
+        .audience {
+            position: relative;
+            z-index: 2;
+            padding: 8rem 3rem;
+        }
+
+        .audience-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .audience-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s;
+        }
+
+        .audience-card:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+
+        .audience-role {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent-purple);
+            margin-bottom: 1rem;
+        }
+
+        .audience-card blockquote {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-style: italic;
+            border-left: 2px solid var(--accent-purple);
+            padding-left: 1rem;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            position: relative;
+            z-index: 2;
+            padding: 8rem 3rem;
+            text-align: center;
+            background: linear-gradient(to bottom, var(--bg-primary), var(--bg-secondary));
+        }
+
+        .cta-box {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 4rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, var(--glow-cyan), transparent 40%),
+                radial-gradient(circle at 80% 80%, var(--glow-purple), transparent 40%);
+            opacity: 0.5;
+            z-index: 0;
+        }
+
+        .cta-box > * {
+            position: relative;
+            z-index: 1;
+        }
+
+        .cta-box h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .cta-box p {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        /* Code Terminal Effect */
+        .terminal {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 3rem;
+            max-width: 520px;
+        }
+
+        .terminal-header {
+            padding: 0.6rem 1rem;
+            background: var(--bg-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .terminal-title {
+            margin-left: auto;
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .terminal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .terminal-dot.red { background: #71717a; }
+        .terminal-dot.yellow { background: #a1a1aa; }
+        .terminal-dot.green { background: var(--accent-cyan); }
+
+        .terminal-body {
+            padding: 1rem 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72rem;
+            line-height: 1.7;
+            text-align: left;
+        }
+
+        .terminal-lines {
+            height: 6.8em;
+            overflow: hidden;
+            text-align: left;
+        }
+
+        .terminal-line {
+            opacity: 0;
+            transform: translateY(0);
+            animation: terminalLineIn 0.3s ease-out forwards;
+            white-space: nowrap;
+            text-align: left;
+        }
+
+        @keyframes terminalLineIn {
+            from { 
+                opacity: 0;
+            }
+            to { 
+                opacity: 1;
+            }
+        }
+
+        .terminal-input {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.25rem;
+        }
+
+        .cursor {
+            color: var(--accent-cyan);
+            animation: cursorBlink 1s step-end infinite;
+        }
+
+        @keyframes cursorBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        .dimmed {
+            color: var(--text-muted);
+        }
+
+        .success {
+            color: var(--accent-cyan);
+        }
+
+        .progress-bar {
+            color: var(--accent-cyan);
+        }
+
+        .cursor-end {
+            color: var(--accent-cyan);
+            animation: cursorBlink 1s step-end infinite;
+        }
+
+        .prompt { color: var(--accent-cyan); }
+        .command { color: var(--text-primary); }
+        .output { color: var(--text-muted); }
+        .highlight { color: var(--accent-cyan); }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .hero {
+                flex-direction: column;
+                text-align: center;
+                padding: 8rem 2rem 3rem;
+            }
+
+            .hero-content {
+                max-width: 100%;
+            }
+
+            .hero-visual {
+                display: none;
+            }
+
+            .hero-actions {
+                justify-content: center;
+            }
+
+            .hero-features {
+                justify-content: center;
+            }
+
+            .services {
+                padding: 5rem 2rem;
+            }
+
+            .services-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+                padding: 3rem 2rem;
+            }
+
+            .process {
+                padding: 5rem 2rem;
+            }
+
+            .process-flow {
+                flex-wrap: wrap;
+            }
+
+            .process-flow::before {
+                display: none;
+            }
+
+            .audience {
+                padding: 5rem 2rem;
+            }
+
+            .cta-section {
+                padding: 5rem 2rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 1rem 1.5rem;
+            }
+
+            header.scrolled {
+                padding: 0.5rem 1.5rem;
+            }
+
+            header.scrolled .logo {
+                font-size: 1.4rem;
+            }
+
+            nav {
+                display: none;
+            }
+
+            .hero {
+                padding: 5rem 1.5rem 2rem;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-desc {
+                font-size: 1rem;
+            }
+
+            .hero-features {
+                flex-direction: column;
+                gap: 0.75rem;
+                align-items: center;
+            }
+
+            .services {
+                padding: 3rem 1.5rem;
+            }
+
+            .services-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .section-header {
+                margin-bottom: 2rem;
+            }
+
+            .section-title {
+                font-size: 1.75rem;
+            }
+
+            .stats {
+                grid-template-columns: 1fr 1fr;
+                padding: 2rem 1.5rem;
+                gap: 1rem;
+            }
+
+            .stat-value {
+                font-size: 2rem;
+            }
+
+            .process {
+                padding: 3rem 1.5rem;
+            }
+
+            .process-step {
+                flex: 1 1 calc(50% - 1rem);
+            }
+
+            .audience {
+                padding: 3rem 1.5rem;
+            }
+
+            .audience-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .cta-section {
+                padding: 3rem 1.5rem;
+            }
+
+            .cta-box {
+                padding: 2rem;
+            }
+
+            .cta-box h2 {
+                font-size: 1.5rem;
+            }
+
+            footer {
+                padding: 1.5rem;
+            }
+
+            .footer-legal {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .footer-links-legal {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .terminal {
+                margin-top: 2rem;
+            }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem;
+            width: 100%;
+            max-width: 450px;
+            position: relative;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s ease;
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0) scale(1);
+        }
+
+        .modal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 20px;
+            background: 
+                radial-gradient(circle at 10% 10%, var(--glow-cyan), transparent 50%),
+                radial-gradient(circle at 90% 90%, var(--glow-purple), transparent 50%);
+            opacity: 0.3;
+            z-index: -1;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 36px;
+            height: 36px;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .modal-close:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .modal h3 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal-subtitle {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-select,
+        .form-input,
+        .form-textarea {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Manrope', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+
+        .form-select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2371717a' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            padding-right: 2.5rem;
+        }
+
+        .form-select option {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 3px var(--glow-cyan);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-submit {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            border: none;
+            border-radius: 10px;
+            color: var(--bg-primary);
+            font-family: 'Manrope', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .form-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px var(--glow-cyan);
+        }
+
+        /* Success state */
+        .modal-success {
+            text-align: center;
+            padding: 2rem 0;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-green));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            font-size: 2.5rem;
+        }
+
+        .modal-success h3 {
+            font-size: 1.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-success p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+            line-height: 1.6;
+        }
+
+        .btn-ok {
+            padding: 1rem 3rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-family: 'Manrope', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-ok:hover {
+            border-color: var(--accent-cyan);
+            background: var(--bg-secondary);
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        /* Checkbox */
+        .form-checkbox {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .form-checkbox input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            margin-top: 2px;
+            accent-color: var(--accent-cyan);
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .form-checkbox label {
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+        .form-checkbox a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .form-checkbox a:hover {
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        footer {
+            position: relative;
+            z-index: 2;
+            padding: 2rem 3rem;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            align-items: center;
+            text-align: center;
+        }
+
+        .footer-main {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .footer-copy {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .footer-legal {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links-legal {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links-legal a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links-legal a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .footer-separator {
+            opacity: 0.5;
+        }
+
+        .footer-note {
+            opacity: 0.7;
+        }
+
+        /* Privacy Modal */
+        .modal-wide {
+            max-width: 650px;
+            max-height: 85vh;
+        }
+
+        .modal-scroll {
+            max-height: calc(85vh - 100px);
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        .modal-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .modal-scroll::-webkit-scrollbar-track {
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+        }
+
+        .modal-scroll::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-radius: 2px;
+        }
+
+        .policy-content {
+            text-align: left;
+            margin: 1.5rem 0;
+        }
+
+        .policy-content h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 1.5rem 0 0.5rem;
+        }
+
+        .policy-content h4:first-of-type {
+            margin-top: 0;
+        }
+
+        .policy-content p {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 0.75rem;
+        }
+
+        .policy-content ul {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin: 0.5rem 0 0.75rem 1.5rem;
+        }
+
+        .policy-content li {
+            margin-bottom: 0.25rem;
+        }
+
+        .policy-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        @media (max-width: 768px) {
+            .footer-legal {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .footer-links-legal {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Effects -->
+    <div class="bg-grid"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="oscilloscope">
+            <svg viewBox="0 0 1920 100" preserveAspectRatio="none">
+                <path class="wave-line" id="wave1">
+                    <animate attributeName="d" 
+                        dur="3s" 
+                        repeatCount="indefinite"
+                        values="
+                            M0,50 Q120,20 240,50 T480,50 T720,50 T960,50 T1200,50 T1440,50 T1680,50 T1920,50;
+                            M0,50 Q120,80 240,50 T480,50 T720,50 T960,50 T1200,50 T1440,50 T1680,50 T1920,50;
+                            M0,50 Q120,20 240,50 T480,50 T720,50 T960,50 T1200,50 T1440,50 T1680,50 T1920,50"
+                    />
+                </path>
+                <path class="wave-line" id="wave2">
+                    <animate attributeName="d" 
+                        dur="4s" 
+                        repeatCount="indefinite"
+                        values="
+                            M0,50 Q160,30 320,50 T640,50 T960,50 T1280,50 T1600,50 T1920,50;
+                            M0,50 Q160,70 320,50 T640,50 T960,50 T1280,50 T1600,50 T1920,50;
+                            M0,50 Q160,30 320,50 T640,50 T960,50 T1280,50 T1600,50 T1920,50"
+                    />
+                </path>
+                <path class="wave-line" id="wave3">
+                    <animate attributeName="d" 
+                        dur="5s" 
+                        repeatCount="indefinite"
+                        values="
+                            M0,50 Q200,35 400,50 T800,50 T1200,50 T1600,50 T1920,50;
+                            M0,50 Q200,65 400,50 T800,50 T1200,50 T1600,50 T1920,50;
+                            M0,50 Q200,35 400,50 T800,50 T1200,50 T1600,50 T1920,50"
+                    />
+                </path>
+            </svg>
+        </div>
+        <div class="logo">
+            <span class="logo-text">
+                <span class="logo-data">Data</span><span class="logo-pulse">Pulse</span>
+            </span>
+        </div>
+        <div class="header-right">
+            <div class="lang-switcher">
+                <button class="lang-btn" data-lang="ru">RU</button>
+                <button class="lang-btn" data-lang="en">EN</button>
+            </div>
+            <a href="demo.html" class="demo-link" data-i18n="header.demo">Демо</a>
+            <button class="cta-btn" data-i18n="header.cta">Обсудить проект</button>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <span class="badge-dot"></span>
+                <span class="mono" data-i18n="hero.badge">Финтех × Data Science</span>
+            </div>
+            <h1 data-i18n="hero.title">Превращаем данные в <span>конкурентное преимущество</span></h1>
+            <p class="hero-desc" data-i18n="hero.desc">ML-модели и аналитика для платёжных систем, денежных переводов и транзакционного бизнеса.</p>
+            
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/>
+                        <polyline points="17 6 23 6 23 12"/>
+                    </svg>
+                    <span data-i18n="hero.feature1">Снижаем <em>fraud-потери</em></span>
+                </div>
+                <div class="hero-feature">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                    <span data-i18n="hero.feature2">Увеличиваем <em>retention</em></span>
+                </div>
+                <div class="hero-feature">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                    </svg>
+                    <span data-i18n="hero.feature3">Оптимизируем <em>операции</em></span>
+                </div>
+            </div>
+
+            <div class="hero-actions">
+                <button class="btn-primary" data-i18n="hero.cta">Запросить консультацию</button>
+            </div>
+            
+            <div class="terminal">
+                <div class="terminal-header">
+                    <span class="terminal-dot red"></span>
+                    <span class="terminal-dot yellow"></span>
+                    <span class="terminal-dot green"></span>
+                    <span class="terminal-title">datapulse-cli</span>
+                </div>
+                <div class="terminal-body">
+                    <div class="terminal-lines" id="terminal-lines">
+                        <!-- Lines will be animated via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="data-transform">
+                <!-- Chaotic raw data -->
+                <div class="chaos-data">
+                    <span class="chaos-item">txn_id:8847</span>
+                    <span class="chaos-item">amt:$234</span>
+                    <span class="chaos-item">usr:null</span>
+                    <span class="chaos-item">ip:192.168</span>
+                    <span class="chaos-item">err:timeout</span>
+                    <span class="chaos-item">geo:???</span>
+                    <span class="chaos-item">ts:1702847</span>
+                    <span class="chaos-item">flag:0x2F</span>
+                    <span class="chaos-item">retry:3</span>
+                    <span class="chaos-item">lat:247ms</span>
+                    <span class="chaos-item">src:API</span>
+                    <span class="chaos-item">ref:#N/A</span>
+                </div>
+
+                <!-- Transform arrows + Organized insights -->
+                <div class="insights-with-arrows">
+                    <div class="insight-row">
+                        <div class="arrow-row">
+                            <span class="transform-label">ML</span>
+                            <div class="arrow-line">
+                                <div class="arrow-particles">
+                                    <span class="arrow-particle"></span>
+                                    <span class="arrow-particle"></span>
+                                    <span class="arrow-particle"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                </svg>
+                            </div>
+                            <div class="insight-content">
+                                <div class="insight-title">Fraud Score</div>
+                                <div class="insight-value">High Risk: 87%</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="insight-row">
+                        <div class="arrow-row">
+                            <span class="transform-label">ML</span>
+                            <div class="arrow-line">
+                                <div class="arrow-particles">
+                                    <span class="arrow-particle"></span>
+                                    <span class="arrow-particle"></span>
+                                    <span class="arrow-particle"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                                    <polyline points="16 7 22 7 22 13"/>
+                                </svg>
+                            </div>
+                            <div class="insight-content">
+                                <div class="insight-title">Churn Probability</div>
+                                <div class="insight-value positive">Low: 12%</div>
+                            </div>
+                            <div class="insight-chart">
+                                <div class="chart-bar"></div>
+                                <div class="chart-bar"></div>
+                                <div class="chart-bar"></div>
+                                <div class="chart-bar"></div>
+                                <div class="chart-bar"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="insight-row">
+                        <div class="arrow-row">
+                            <span class="transform-label">ML</span>
+                            <div class="arrow-line">
+                                <div class="arrow-particles">
+                                    <span class="arrow-particle"></span>
+                                    <span class="arrow-particle"></span>
+                                    <span class="arrow-particle"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"/>
+                                    <line x1="12" y1="20" x2="12" y2="4"/>
+                                    <line x1="6" y1="20" x2="6" y2="14"/>
+                                </svg>
+                            </div>
+                            <div class="insight-content">
+                                <div class="insight-title">Volume Forecast</div>
+                                <div class="insight-value">+23% next week</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats">
+        <div class="stat-item">
+            <div class="stat-value">67%</div>
+            <div class="stat-label" data-i18n="stats.fraud">снижение fraud rate</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">1.7×</div>
+            <div class="stat-label" data-i18n="stats.retention">рост retention</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">75M</div>
+            <div class="stat-label" data-i18n="stats.transactions">транзакций/день</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">99.9%</div>
+            <div class="stat-label" data-i18n="stats.uptime">uptime моделей</div>
+        </div>
+        <div class="stats-disclaimer" data-i18n="stats.disclaimer">
+            * Показатели рассчитаны на основе различных проектов. Фактические результаты могут отличаться в зависимости от специфики бизнеса и качества данных.
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="section-header">
+            <span class="section-tag" data-i18n="services.tag">// НАПРАВЛЕНИЯ</span>
+            <h2 class="section-title" data-i18n="services.title">Что мы делаем</h2>
+            <p class="section-desc" data-i18n="services.desc">Не просто строим модели — внедряем их в бизнес-процессы с измеримым результатом</p>
+        </div>
+
+        <div class="services-grid">
+            <div class="service-card">
+                <div class="service-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                    </svg>
+                </div>
+                <h3>Risk & Fraud</h3>
+                <p data-i18n="services.risk.desc">Модели оценки рисков и детекции мошенничества. AML-аналитика и графовый анализ связей.</p>
+                <div class="service-tags">
+                    <span class="service-tag">fraud scoring</span>
+                    <span class="service-tag">anomaly detection</span>
+                    <span class="service-tag">AML</span>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                    </svg>
+                </div>
+                <h3>Customer Intelligence</h3>
+                <p data-i18n="services.customer.desc">Предсказание оттока, расчёт LTV, персонализация офферов, сегментация клиентской базы.</p>
+                <div class="service-tags">
+                    <span class="service-tag">churn prediction</span>
+                    <span class="service-tag">LTV</span>
+                    <span class="service-tag">recommendations</span>
+                </div>
+            </div>
+
+            <div class="service-card">
+                <div class="service-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                </div>
+                <h3>Operations Analytics</h3>
+                <p data-i18n="services.ops.desc">Прогнозирование объёмов, оптимизация маршрутизации, root cause analysis инцидентов.</p>
+                <div class="service-tags">
+                    <span class="service-tag">forecasting</span>
+                    <span class="service-tag">routing</span>
+                    <span class="service-tag">failure analysis</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="process" id="process">
+        <div class="section-header">
+            <span class="section-tag" data-i18n="process.tag">// ПРОЦЕСС</span>
+            <h2 class="section-title" data-i18n="process.title">Как мы работаем</h2>
+            <p class="section-desc" data-i18n="process.desc">От постановки задачи до production-ready решения</p>
+        </div>
+
+        <div class="process-flow">
+            <div class="process-step">
+                <div class="step-number">01</div>
+                <h4 data-i18n="process.step1.title">Аудит данных</h4>
+                <p data-i18n="process.step1.desc">Оценка доступных данных и возможностей</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">02</div>
+                <h4 data-i18n="process.step2.title">Разработка</h4>
+                <p data-i18n="process.step2.desc">ML-модели под ваши бизнес-задачи</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">03</div>
+                <h4 data-i18n="process.step3.title">Интеграция</h4>
+                <p data-i18n="process.step3.desc">Production-ready API в ваш стек</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">04</div>
+                <h4 data-i18n="process.step4.title">Мониторинг</h4>
+                <p data-i18n="process.step4.desc">Отслеживание и переобучение</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Audience Section -->
+    <section class="audience" id="audience">
+        <div class="section-header">
+            <span class="section-tag" data-i18n="audience.tag">// ЭКСПЕРТИЗА</span>
+            <h2 class="section-title" data-i18n="audience.title">Говорим на вашем языке</h2>
+            <p class="section-desc" data-i18n="audience.desc">Понимаем задачи разных стейкхолдеров</p>
+        </div>
+
+        <div class="audience-grid">
+            <div class="audience-card">
+                <div class="audience-role" data-i18n="audience.ceo.role">→ CEO / Собственники</div>
+                <blockquote data-i18n="audience.ceo.quote">Помогаем зарабатывать больше и терять меньше. Наши модели снижают потери от мошенничества, удерживают клиентов и оптимизируют операционку — с измеримым ROI.</blockquote>
+            </div>
+
+            <div class="audience-card">
+                <div class="audience-role" data-i18n="audience.cto.role">→ CTO / Технические директора</div>
+                <blockquote data-i18n="audience.cto.quote">Production-grade ML: не jupyter-ноутбуки, а задеплоенные модели с мониторингом, версионированием и документацией. Интегрируемся в ваш стек.</blockquote>
+            </div>
+
+            <div class="audience-card">
+                <div class="audience-role" data-i18n="audience.cpo.role">→ CPO / Продуктологи</div>
+                <blockquote data-i18n="audience.cpo.quote">Data-driven продуктовые решения: от A/B-тестов до персонализации. Помогаем понять клиентов через данные и строить фичи, которые влияют на метрики.</blockquote>
+            </div>
+
+            <div class="audience-card">
+                <div class="audience-role" data-i18n="audience.risk.role">→ Risk / Compliance</div>
+                <blockquote data-i18n="audience.risk.quote">Модели, которые можно объяснить регулятору. Работаем с интерпретируемостью, документируем логику, учитываем требования FATF.</blockquote>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section" id="contact">
+        <div class="cta-box">
+            <h2 data-i18n="cta.title">Готовы к разговору о данных?</h2>
+            <p data-i18n="cta.desc">Расскажите о вашей задаче — обсудим, как ML может помочь вашему бизнесу</p>
+            <button class="btn-primary" data-i18n="cta.button">Запланировать звонок</button>
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" id="modal-close">×</button>
+            
+            <div id="modal-form">
+                <h3 data-i18n="modal.title">Свяжитесь с нами</h3>
+                <p class="modal-subtitle" data-i18n="modal.subtitle">Оставьте контакт — мы перезвоним или напишем</p>
+                
+                <div id="contact-form">
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="modal.method">Способ связи</label>
+                        <select class="form-select" id="contact-method">
+                            <option value="email">Email</option>
+                            <option value="phone" data-i18n="modal.phone">Телефон</option>
+                            <option value="telegram">Telegram</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" id="contact-label" data-i18n="modal.email">Ваш email</label>
+                        <input type="text" class="form-input" id="contact-input" placeholder="example@company.com">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" data-i18n="modal.message">Сообщение (опционально)</label>
+                        <textarea class="form-textarea" id="message-textarea" data-i18n-placeholder="modal.messagePlaceholder" placeholder="Расскажите кратко о вашей задаче..."></textarea>
+                    </div>
+                    
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="privacy-consent" required>
+                        <label for="privacy-consent" data-i18n="modal.consent">Даю согласие на <a href="#" id="privacy-link">обработку персональных данных</a></label>
+                    </div>
+                    
+                    <button type="submit" class="form-submit" id="form-submit" data-i18n="modal.submit">Отправить</button>
+                </div>
+            </div>
+            
+            <div id="modal-success" class="modal-success hidden">
+                <div class="success-icon">✓</div>
+                <h3 data-i18n="modal.thanks">Спасибо!</h3>
+                <p data-i18n="modal.thanksDesc">Мы обязательно свяжемся с Вами<br>в ближайшее время</p>
+                <button class="btn-ok" id="btn-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-main">
+            <div class="footer-copy">
+                <span class="mono">© 2025 DataPulse</span> — <span data-i18n="footer.tagline">Data Science для финтеха</span>
+            </div>
+            <div class="footer-legal" id="footer-legal">
+                <span data-i18n="footer.company">ИП Дембовский Роман Сергеевич</span>
+                <span><span data-i18n="footer.tin">ИНН</span>: 772015172761</span>
+            </div>
+        </div>
+        <div class="footer-links-legal">
+            <a href="#" id="footer-privacy-link" data-i18n="footer.privacy">Политика конфиденциальности</a>
+            <span class="footer-separator">•</span>
+            <span class="footer-note" data-i18n="footer.cookies">Мы не собираем cookies</span>
+        </div>
+    </footer>
+
+    <!-- Privacy Policy Modal -->
+    <div class="modal-overlay" id="privacy-modal">
+        <div class="modal modal-wide">
+            <button class="modal-close" id="privacy-close">×</button>
+            <div class="modal-scroll">
+                <!-- Russian version -->
+                <div id="privacy-ru" class="privacy-content-lang">
+                    <h3>Политика конфиденциальности</h3>
+                    <div class="policy-content">
+                        <p class="policy-date">Дата публикации: 01.01.2025</p>
+                        
+                        <h4>1. Общие положения</h4>
+                        <p>Настоящая Политика конфиденциальности персональных данных (далее — Политика) действует в отношении всех персональных данных, которые ИП Дембовский Роман Сергеевич (ИНН: 772015172761, далее — Оператор) может получить от Пользователя во время использования сайта.</p>
+                        
+                        <h4>2. Определения</h4>
+                        <p><strong>Персональные данные</strong> — любая информация, относящаяся к прямо или косвенно определённому или определяемому физическому лицу (субъекту персональных данных).</p>
+                        <p><strong>Обработка персональных данных</strong> — любое действие с персональными данными, включая сбор, запись, систематизацию, накопление, хранение, уточнение, извлечение, использование, передачу, обезличивание, блокирование, удаление, уничтожение.</p>
+                        
+                        <h4>3. Какие данные мы собираем</h4>
+                        <p>Оператор собирает только те данные, которые Пользователь добровольно предоставляет через форму обратной связи:</p>
+                        <ul>
+                            <li>Адрес электронной почты (email), или</li>
+                            <li>Номер телефона, или</li>
+                            <li>Имя пользователя в Telegram</li>
+                            <li>Текст сообщения (при наличии)</li>
+                        </ul>
+                        
+                        <h4>4. Цели обработки данных</h4>
+                        <p>Персональные данные используются <strong>исключительно</strong> для связи с Пользователем в ответ на его обращение. Оператор не использует данные для рекламных рассылок, передачи третьим лицам или иных целей.</p>
+                        
+                        <h4>5. Хранение данных</h4>
+                        <p>Оператор <strong>не осуществляет долгосрочного хранения</strong> персональных данных. Данные используются только для осуществления связи с Пользователем и удаляются после завершения коммуникации, но не позднее 30 (тридцати) дней с момента получения обращения.</p>
+                        
+                        <h4>6. Защита данных</h4>
+                        <p>Оператор принимает необходимые организационные и технические меры для защиты персональных данных от неправомерного доступа, уничтожения, изменения, блокирования, копирования, распространения, а также от иных неправомерных действий третьих лиц.</p>
+                        
+                        <h4>7. Права пользователя</h4>
+                        <p>Пользователь имеет право:</p>
+                        <ul>
+                            <li>Получить информацию об обработке своих персональных данных</li>
+                            <li>Требовать уточнения, блокирования или уничтожения персональных данных</li>
+                            <li>Отозвать согласие на обработку персональных данных</li>
+                        </ul>
+                        <p>Для реализации указанных прав Пользователь может связаться с Оператором любым доступным способом.</p>
+                        
+                        <h4>8. Согласие пользователя</h4>
+                        <p>Отправляя свои контактные данные через форму обратной связи, Пользователь подтверждает своё согласие на обработку персональных данных в соответствии с настоящей Политикой и Федеральным законом от 27.07.2006 № 152-ФЗ «О персональных данных».</p>
+                        
+                        <h4>9. Изменение политики</h4>
+                        <p>Оператор вправе вносить изменения в настоящую Политику. Новая редакция вступает в силу с момента её размещения на сайте.</p>
+                        
+                        <h4>10. Контакты</h4>
+                        <p>ИП Дембовский Роман Сергеевич<br>ИНН: 772015172761</p>
+                    </div>
+                </div>
+                
+                <!-- English version -->
+                <div id="privacy-en" class="privacy-content-lang" style="display: none;">
+                    <h3>Privacy Policy</h3>
+                    <div class="policy-content">
+                        <p class="policy-date">Published: January 1, 2025</p>
+                        
+                        <h4>1. General Provisions</h4>
+                        <p>This Privacy Policy governs all personal data that IE Dembovsky Roman Sergeevich (TIN: 772015172761, hereinafter — the Operator) may receive from Users while using the website.</p>
+                        
+                        <h4>2. Definitions</h4>
+                        <p><strong>Personal data</strong> — any information relating directly or indirectly to an identified or identifiable natural person (data subject).</p>
+                        <p><strong>Processing of personal data</strong> — any action with personal data, including collection, recording, systematization, accumulation, storage, clarification, extraction, use, transfer, anonymization, blocking, deletion, destruction.</p>
+                        
+                        <h4>3. Data We Collect</h4>
+                        <p>The Operator collects only data voluntarily provided by the User through the contact form:</p>
+                        <ul>
+                            <li>Email address, or</li>
+                            <li>Phone number, or</li>
+                            <li>Telegram username</li>
+                            <li>Message text (if provided)</li>
+                        </ul>
+                        
+                        <h4>4. Purpose of Data Processing</h4>
+                        <p>Personal data is used <strong>exclusively</strong> to contact the User in response to their inquiry. The Operator does not use data for marketing mailings, transfer to third parties, or other purposes.</p>
+                        
+                        <h4>5. Data Storage</h4>
+                        <p>The Operator <strong>does not perform long-term storage</strong> of personal data. Data is used only to contact the User and is deleted after communication is completed, but no later than 30 (thirty) days from the date of receiving the inquiry.</p>
+                        
+                        <h4>6. Data Protection</h4>
+                        <p>The Operator takes necessary organizational and technical measures to protect personal data from unauthorized access, destruction, modification, blocking, copying, distribution, and other unlawful actions by third parties.</p>
+                        
+                        <h4>7. User Rights</h4>
+                        <p>The User has the right to:</p>
+                        <ul>
+                            <li>Obtain information about the processing of their personal data</li>
+                            <li>Request clarification, blocking, or destruction of personal data</li>
+                            <li>Withdraw consent to personal data processing</li>
+                        </ul>
+                        <p>To exercise these rights, the User may contact the Operator by any available means.</p>
+                        
+                        <h4>8. User Consent</h4>
+                        <p>By submitting contact details through the contact form, the User confirms their consent to the processing of personal data in accordance with this Policy.</p>
+                        
+                        <h4>9. Policy Changes</h4>
+                        <p>The Operator reserves the right to make changes to this Policy. The new version takes effect upon posting on the website.</p>
+                        
+                        <h4>10. Contact Information</h4>
+                        <p>IE Dembovsky Roman Sergeevich<br>TIN: 772015172761</p>
+                    </div>
+                </div>
+                
+                <button class="btn-ok" id="privacy-ok" data-i18n="privacy.close">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Generate floating data particles
+        const particlesContainer = document.getElementById('particles');
+        const dataElements = ['0', '1', '{', '}', '[', ']', '<', '>', '/', '*', '+', '=', '$', '%', '&', '#'];
+        
+        for (let i = 0; i < 30; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.textContent = dataElements[Math.floor(Math.random() * dataElements.length)];
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDuration = (10 + Math.random() * 20) + 's';
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // ========== LOCALIZATION ==========
+        const translations = {
+            ru: {
+                'header.cta': 'Обсудить проект',
+                'header.demo': 'Демо',
+                'hero.badge': 'Финтех × Data Science',
+                'hero.title': 'Превращаем данные в <span>конкурентное преимущество</span>',
+                'hero.desc': 'ML-модели и аналитика для платёжных систем, денежных переводов и транзакционного бизнеса.',
+                'hero.feature1': 'Снижаем <em>fraud-потери</em>',
+                'hero.feature2': 'Увеличиваем <em>retention</em>',
+                'hero.feature3': 'Оптимизируем <em>операции</em>',
+                'hero.cta': 'Запросить консультацию',
+                'stats.fraud': 'снижение fraud rate',
+                'stats.retention': 'рост retention',
+                'stats.transactions': 'транзакций/день',
+                'stats.uptime': 'uptime моделей',
+                'stats.disclaimer': '* Показатели рассчитаны на основе различных проектов. Фактические результаты могут отличаться в зависимости от специфики бизнеса и качества данных.',
+                'services.tag': '// НАПРАВЛЕНИЯ',
+                'services.title': 'Что мы делаем',
+                'services.desc': 'Не просто строим модели — внедряем их в бизнес-процессы с измеримым результатом',
+                'services.risk.desc': 'Выявляем мошеннические транзакции в реальном времени. Строим скоринговые модели, анализируем аномалии и подозрительные паттерны. Помогаем соответствовать требованиям AML/KYC через графовый анализ связей.',
+                'services.customer.desc': 'Предсказываем отток до того, как клиент уйдёт. Рассчитываем LTV для точного таргетинга, персонализируем офферы и сегментируем базу для повышения конверсии.',
+                'services.ops.desc': 'Прогнозируем объёмы транзакций для планирования мощностей. Оптимизируем маршрутизацию платежей и проводим root cause analysis инцидентов для снижения даунтайма.',
+                'process.tag': '// ПРОЦЕСС',
+                'process.title': 'Как мы работаем',
+                'process.desc': 'От постановки задачи до production-ready решения',
+                'process.step1.title': 'Аудит данных',
+                'process.step1.desc': 'Оценка доступных данных и возможностей',
+                'process.step2.title': 'Разработка',
+                'process.step2.desc': 'ML-модели под ваши бизнес-задачи',
+                'process.step3.title': 'Интеграция',
+                'process.step3.desc': 'Production-ready API в ваш стек',
+                'process.step4.title': 'Мониторинг',
+                'process.step4.desc': 'Отслеживание и переобучение',
+                'audience.tag': '// ДЛЯ КОГО',
+                'audience.title': 'Понимаем вашу специфику',
+                'audience.desc': 'Говорим на языке бизнеса, технологий и регуляторики',
+                'audience.ceo.role': '→ CEO / Собственники',
+                'audience.ceo.quote': 'Превращаем данные в прибыль: снижаем потери от фрода, удерживаем клиентов, которые собирались уйти, и находим точки роста в операционных процессах. Каждый проект — с прозрачным ROI.',
+                'audience.cto.role': '→ CTO / Технические директора',
+                'audience.cto.quote': 'Никаких jupyter-ноутбуков в проде. Поставляем модели как сервисы: с API, мониторингом дрифта, версионированием и документацией. Интегрируемся в ваш стек, а не создаём параллельную инфраструктуру.',
+                'audience.cpo.role': '→ CPO / Продуктовые директора',
+                'audience.cpo.quote': 'Помогаем принимать продуктовые решения на данных: от корректных A/B-тестов до ML-персонализации. Строим фичи, которые двигают метрики, а не просто «используют AI».',
+                'audience.risk.role': '→ Risk / Compliance',
+                'audience.risk.quote': 'Создаём модели, которые можно объяснить регулятору. Работаем с интерпретируемостью, документируем логику принятия решений, учитываем требования ЦБ и FATF.',
+                'cta.title': 'Готовы к разговору о данных?',
+                'cta.desc': 'Расскажите о вашей задаче — обсудим, как ML может помочь вашему бизнесу',
+                'cta.button': 'Запланировать звонок',
+                'modal.title': 'Свяжитесь с нами',
+                'modal.subtitle': 'Оставьте контакт — мы перезвоним или напишем',
+                'modal.method': 'Способ связи',
+                'modal.phone': 'Телефон',
+                'modal.email': 'Ваш email',
+                'modal.yourPhone': 'Ваш телефон',
+                'modal.yourTelegram': 'Ваш Telegram',
+                'modal.message': 'Сообщение (опционально)',
+                'modal.messagePlaceholder': 'Расскажите кратко о вашей задаче...',
+                'modal.consent': 'Даю согласие на <a href="#" id="privacy-link">обработку персональных данных</a>',
+                'modal.submit': 'Отправить',
+                'modal.thanks': 'Спасибо!',
+                'modal.thanksDesc': 'Мы обязательно свяжемся с Вами<br>в ближайшее время',
+                'footer.tagline': 'Data Science для финтеха',
+                'footer.company': 'ИП Дембовский Роман Сергеевич',
+                'footer.privacy': 'Политика конфиденциальности',
+                'footer.cookies': 'Мы не собираем cookies',
+                'footer.tin': 'ИНН',
+                'privacy.close': 'Закрыть',
+                'page.title': 'DataPulse — Data Science для финтеха'
+            },
+            en: {
+                'header.cta': 'Get in Touch',
+                'header.demo': 'Demo',
+                'hero.badge': 'Fintech × Data Science',
+                'hero.title': 'Transform Data into <span>Competitive Advantage</span>',
+                'hero.desc': 'ML models and analytics for payment systems, money transfers, and transaction businesses.',
+                'hero.feature1': 'Reduce <em>fraud losses</em>',
+                'hero.feature2': 'Increase <em>retention</em>',
+                'hero.feature3': 'Optimize <em>operations</em>',
+                'hero.cta': 'Request Consultation',
+                'stats.fraud': 'fraud rate reduction',
+                'stats.retention': 'retention growth',
+                'stats.transactions': 'transactions/day',
+                'stats.uptime': 'model uptime',
+                'stats.disclaimer': '* Metrics based on various projects. Actual results may vary depending on business specifics and data quality.',
+                'services.tag': '// SERVICES',
+                'services.title': 'What We Do',
+                'services.desc': "We don't just build models — we integrate them into business processes with measurable results",
+                'services.risk.desc': 'Detect fraudulent transactions in real-time. Build scoring models, analyze anomalies and suspicious patterns. Help meet AML/KYC requirements through graph-based link analysis.',
+                'services.customer.desc': 'Predict churn before customers leave. Calculate LTV for precise targeting, personalize offers, and segment your base to boost conversion rates.',
+                'services.ops.desc': 'Forecast transaction volumes for capacity planning. Optimize payment routing and conduct root cause analysis of incidents to minimize downtime.',
+                'process.tag': '// PROCESS',
+                'process.title': 'How We Work',
+                'process.desc': 'From problem definition to production-ready solution',
+                'process.step1.title': 'Data Audit',
+                'process.step1.desc': 'Assessment of available data and capabilities',
+                'process.step2.title': 'Development',
+                'process.step2.desc': 'ML models for your business needs',
+                'process.step3.title': 'Integration',
+                'process.step3.desc': 'Production-ready API into your stack',
+                'process.step4.title': 'Monitoring',
+                'process.step4.desc': 'Tracking and retraining',
+                'audience.tag': '// WHO WE HELP',
+                'audience.title': 'We Understand Your Domain',
+                'audience.desc': 'Speaking the language of business, technology, and compliance',
+                'audience.ceo.role': '→ CEO / Founders',
+                'audience.ceo.quote': 'We turn data into profit: reduce fraud losses, retain customers before they churn, and find growth opportunities in operations. Every project comes with transparent ROI.',
+                'audience.cto.role': '→ CTO / Tech Directors',
+                'audience.cto.quote': 'No jupyter notebooks in production. We deliver models as services: with APIs, drift monitoring, versioning, and documentation. We integrate into your stack, not build parallel infrastructure.',
+                'audience.cpo.role': '→ CPO / Product Directors',
+                'audience.cpo.quote': 'We help make data-driven product decisions: from proper A/B tests to ML personalization. Building features that move metrics, not just "use AI".',
+                'audience.risk.role': '→ Risk / Compliance',
+                'audience.risk.quote': 'We create models you can explain to regulators. Working with interpretability, documenting decision logic, meeting FATF and local regulatory requirements.',
+                'cta.title': 'Ready to Talk Data?',
+                'cta.desc': "Tell us about your challenge — let's discuss how ML can help your business",
+                'cta.button': 'Schedule a Call',
+                'modal.title': 'Contact Us',
+                'modal.subtitle': "Leave your contact — we'll call or write back",
+                'modal.method': 'Contact Method',
+                'modal.phone': 'Phone',
+                'modal.email': 'Your email',
+                'modal.yourPhone': 'Your phone',
+                'modal.yourTelegram': 'Your Telegram',
+                'modal.message': 'Message (optional)',
+                'modal.messagePlaceholder': 'Briefly describe your task...',
+                'modal.consent': 'I agree to <a href="#" id="privacy-link">personal data processing</a>',
+                'modal.submit': 'Submit',
+                'modal.thanks': 'Thank You!',
+                'modal.thanksDesc': "We'll get back to you<br>as soon as possible",
+                'footer.tagline': 'Data Science for Fintech',
+                'footer.company': 'IE Dembovsky Roman Sergeevich',
+                'footer.privacy': 'Privacy Policy',
+                'footer.cookies': "We don't collect cookies",
+                'footer.tin': 'TIN',
+                'privacy.close': 'Close',
+                'page.title': 'DataPulse — Data Science for Fintech'
+            }
+        };
+
+        let currentLang = 'ru';
+
+        function setLanguage(lang) {
+            currentLang = lang;
+            localStorage.setItem('lang', lang);
+            
+            // Update html lang attribute
+            document.documentElement.lang = lang;
+            
+            // Update page title
+            if (translations[lang]['page.title']) {
+                document.title = translations[lang]['page.title'];
+            }
+            
+            // Update all elements with data-i18n
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang][key]) {
+                    el.innerHTML = translations[lang][key];
+                }
+            });
+
+            // Update placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (translations[lang][key]) {
+                    el.placeholder = translations[lang][key];
+                }
+            });
+
+            // Update language buttons
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === lang);
+            });
+
+            // Re-bind privacy link
+            const privacyLink = document.getElementById('privacy-link');
+            if (privacyLink) {
+                privacyLink.addEventListener('click', openPrivacyModal);
+            }
+
+            // Switch privacy policy language
+            const privacyRu = document.getElementById('privacy-ru');
+            const privacyEn = document.getElementById('privacy-en');
+            if (privacyRu && privacyEn) {
+                privacyRu.style.display = lang === 'ru' ? 'block' : 'none';
+                privacyEn.style.display = lang === 'en' ? 'block' : 'none';
+            }
+
+            // Hide legal info in English version
+            const footerLegal = document.getElementById('footer-legal');
+            if (footerLegal) {
+                footerLegal.style.display = lang === 'ru' ? 'flex' : 'none';
+            }
+        }
+
+        // Detect system language
+        function getDefaultLanguage() {
+            const stored = localStorage.getItem('lang');
+            if (stored) return stored;
+            
+            const browserLang = navigator.language || navigator.userLanguage;
+            return browserLang.startsWith('ru') ? 'ru' : 'en';
+        }
+
+        // Initialize language
+        setLanguage(getDefaultLanguage());
+
+        // Language switcher event listeners
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                setLanguage(btn.dataset.lang);
+            });
+        });
+
+        // Header scroll effect
+        const header = document.querySelector('header');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // Terminal animation on scroll into view
+        const terminal = document.querySelector('.terminal');
+        const terminalLinesContainer = document.getElementById('terminal-lines');
+        
+        const terminalSequence = [
+            { text: '<span class="prompt">$</span> datapulse model deploy fraud_v3', delay: 0 },
+            { text: 'Loading model artifacts...', delay: 600 },
+            { text: 'Validating schema <span class="dimmed">[OK]</span>', delay: 400 },
+            { text: 'Connecting to inference cluster...', delay: 500 },
+            { text: 'Deploying to 3 replicas <span class="progress-bar">[#                   ]</span> 5%', delay: 400, progress: true },
+            { text: '<span class="success">✓</span> Model deployed: fraud_v3 @ prod-eu-1', delay: 0 },
+            { text: '<span class="dimmed">  latency p99: 18ms | throughput: 12k rps</span>', delay: 300 },
+            { text: '<span class="prompt">$</span> datapulse eval --last-7d', delay: 800 },
+            { text: 'Fetching evaluation metrics...', delay: 500 },
+            { text: '<span class="success">✓</span> Fraud detection rate: <span class="success">94.7%</span>', delay: 400 },
+            { text: '<span class="success">✓</span> False positive rate: <span class="success">0.3%</span>', delay: 300 },
+            { text: () => {
+                const now = new Date();
+                const date = now.toLocaleDateString('en-US', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+                return `<span class="dimmed">[${date} ${time}]</span> <span class="success">Analysis completed successfully</span>`;
+            }, delay: 400 },
+        ];
+
+        const progressSteps = [
+            '[##                  ] 12%',
+            '[####                ] 21%',
+            '[######              ] 34%',
+            '[#########           ] 47%',
+            '[###########         ] 58%',
+            '[##############      ] 71%',
+            '[################    ] 83%',
+            '[##################  ] 92%',
+            '[####################] 100%'
+        ];
+
+        let terminalStarted = false;
+        const maxVisibleLines = 4;
+        let lines = [];
+
+        function addTerminalLine(content) {
+            const html = typeof content === 'function' ? content() : content;
+            const line = document.createElement('div');
+            line.className = 'terminal-line';
+            line.innerHTML = html;
+            terminalLinesContainer.appendChild(line);
+            lines.push(line);
+            
+            // Remove old lines to keep only 4 visible
+            if (lines.length > maxVisibleLines) {
+                const oldLine = lines.shift();
+                oldLine.style.animation = 'none';
+                oldLine.style.opacity = '0';
+                setTimeout(() => oldLine.remove(), 100);
+            }
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                line.style.animation = 'terminalLineIn 0.3s ease-out forwards';
+            });
+        }
+
+        async function animateProgress(baseText, lineElement) {
+            for (const step of progressSteps) {
+                await new Promise(r => setTimeout(r, 120));
+                lineElement.innerHTML = baseText.replace(/\[.*\].*%/, `<span class="progress-bar">${step}</span>`);
+            }
+        }
+
+        async function runTerminalAnimation() {
+            if (terminalStarted) return;
+            terminalStarted = true;
+            
+            for (let i = 0; i < terminalSequence.length; i++) {
+                const item = terminalSequence[i];
+                await new Promise(r => setTimeout(r, item.delay));
+                addTerminalLine(item.text);
+                
+                if (item.progress) {
+                    const currentLine = lines[lines.length - 1];
+                    await animateProgress(item.text, currentLine);
+                }
+            }
+        }
+
+        const terminalObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    runTerminalAnimation();
+                    terminalObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+
+        terminalObserver.observe(terminal);
+
+        // Modal functionality
+        const modalOverlay = document.getElementById('modal-overlay');
+        const modalForm = document.getElementById('modal-form');
+        const modalSuccess = document.getElementById('modal-success');
+        const contactMethod = document.getElementById('contact-method');
+        const contactLabel = document.getElementById('contact-label');
+        const contactInput = document.getElementById('contact-input');
+
+        // Open modal
+        document.querySelectorAll('.cta-btn, .btn-primary').forEach(btn => {
+            btn.addEventListener('click', () => {
+                modalOverlay.classList.add('active');
+                modalForm.classList.remove('hidden');
+                modalSuccess.classList.add('hidden');
+                document.body.style.overflow = 'hidden';
+            });
+        });
+
+        // Close modal
+        function closeModal() {
+            modalOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('modal-close').addEventListener('click', closeModal);
+        document.getElementById('btn-ok').addEventListener('click', closeModal);
+
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) closeModal();
+        });
+
+        // Update contact input placeholder based on method
+        contactMethod.addEventListener('change', function() {
+            const placeholders = {
+                'email': 'example@company.com',
+                'phone': '+7 (999) 123-45-67',
+                'telegram': '@username'
+            };
+            const labelsRu = {
+                'email': 'Ваш email',
+                'phone': 'Ваш телефон',
+                'telegram': 'Ваш Telegram'
+            };
+            const labelsEn = {
+                'email': 'Your email',
+                'phone': 'Your phone',
+                'telegram': 'Your Telegram'
+            };
+            const labels = currentLang === 'ru' ? labelsRu : labelsEn;
+            contactInput.placeholder = placeholders[this.value];
+            contactLabel.textContent = labels[this.value];
+        });
+
+        // Form submit
+        document.getElementById('form-submit').addEventListener('click', function(e) {
+            e.preventDefault();
+            const checkbox = document.getElementById('privacy-consent');
+            if (!checkbox.checked) {
+                checkbox.focus();
+                return;
+            }
+            modalForm.classList.add('hidden');
+            modalSuccess.classList.remove('hidden');
+        });
+
+        // Privacy Policy Modal
+        const privacyModal = document.getElementById('privacy-modal');
+        
+        function openPrivacyModal(e) {
+            e.preventDefault();
+            privacyModal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePrivacyModal() {
+            privacyModal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('privacy-link').addEventListener('click', openPrivacyModal);
+        document.getElementById('footer-privacy-link').addEventListener('click', openPrivacyModal);
+        document.getElementById('privacy-close').addEventListener('click', closePrivacyModal);
+        document.getElementById('privacy-ok').addEventListener('click', closePrivacyModal);
+
+        privacyModal.addEventListener('click', (e) => {
+            if (e.target === privacyModal) closePrivacyModal();
+        });
+    </script>
+</body>
+</html>
